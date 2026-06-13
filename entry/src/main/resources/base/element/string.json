@@ -1,0 +1,36 @@
+{
+  "string": [
+    {
+      "name": "app_name",
+      "value": "CodeRemote"
+    },
+    {
+      "name": "module_desc",
+      "value": "Remote control opencode from HarmonyOS"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "CodeRemote main ability"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "CodeRemote"
+    },
+    {
+      "name": "tab_chat",
+      "value": "Chat"
+    },
+    {
+      "name": "tab_files",
+      "value": "Files"
+    },
+    {
+      "name": "tab_terminal",
+      "value": "Terminal"
+    },
+    {
+      "name": "tab_settings",
+      "value": "Settings"
+    }
+  ]
+}
