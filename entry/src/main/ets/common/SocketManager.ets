@@ -202,10 +202,7 @@ export class SocketManager {
         }
       })
 
-      const connectOptions: webSocket.WebSocketRequestOptions = {
-        header: { 'User-Agent': 'CodeRemote-HarmonyOS' }
-      }
-      this.ws.connect(url, connectOptions, (err: BusinessError, value: boolean) => {
+      this.ws.connect(url, (err: BusinessError, value: boolean) => {
         if (err) {
           console.error('WebSocket connect failed:', err.message)
           this.setStatus(ConnectionStatus.ERROR)
