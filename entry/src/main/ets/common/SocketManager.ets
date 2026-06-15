@@ -2,10 +2,14 @@ import webSocket from '@ohos.net.webSocket';
 import { http } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { WsMessage } from './Models';
-import { RECONNECT_DELAY_MS, MAX_RECONNECT_ATTEMPTS } from './Constants';
+import {
+  RECONNECT_DELAY_MS, MAX_RECONNECT_ATTEMPTS,
+  PING_INTERVAL_MS, MESSAGE_TIMEOUT_MS
+} from './Constants';
 
 type MessageCallback = (msg: WsMessage) => void;
 type StatusCallback = (status: ConnectionStatus) => void;
+type ErrorCallback = (error: string) => void;
 
 export enum ConnectionStatus {
   DISCONNECTED = 'disconnected',
@@ -19,12 +23,16 @@ export class SocketManager {
   private static instance: SocketManager | null = null
   private ws: webSocket.WebSocket | null = null
   private serverUrl: string = ''
+  private authToken: string = ''
   private status: ConnectionStatus = ConnectionStatus.DISCONNECTED
   private messageCallbacks: MessageCallback[] = []
   private statusCallbacks: StatusCallback[] = []
+  private errorCallbacks: ErrorCallback[] = []
   private reconnectAttempts: number = 0
   private reconnectTimer: number | null = null
   private pendingMessages: string[] = []
+  private pingTimer: number | null = null
+  private lastPongTime: number = 0
 
   static getInstance(): SocketManager {
     if (!SocketManager.instance) {
@@ -43,6 +51,14 @@ export class SocketManager {
 
   getServerUrl(): string {
     return this.serverUrl
+  }
+
+  setAuthToken(token: string): void {
+    this.authToken = token
+  }
+
+  getAuthToken(): string {
+    return this.authToken
   }
 
   onMessage(callback: MessageCallback): void {
@@ -67,6 +83,17 @@ export class SocketManager {
     }
   }
 
+  onError(callback: ErrorCallback): void {
+    this.errorCallbacks.push(callback)
+  }
+
+  offError(callback: ErrorCallback): void {
+    const index = this.errorCallbacks.indexOf(callback)
+    if (index > -1) {
+      this.errorCallbacks.splice(index, 1)
+    }
+  }
+
   private setStatus(status: ConnectionStatus): void {
     this.status = status
     for (const cb of this.statusCallbacks) {
@@ -80,15 +107,32 @@ export class SocketManager {
     }
   }
 
-  connect(url: string): void {
+  private notifyError(error: string): void {
+    for (const cb of this.errorCallbacks) {
+      cb(error)
+    }
+  }
+
+  connect(url: string, token?: string): void {
     if (this.ws) {
       this.disconnect()
     }
 
     this.serverUrl = url
+    if (token) {
+      this.authToken = token
+    }
+
+    // Build connection URL with auth token
+    let connectUrl = this.serverUrl
+    if (this.authToken) {
+      const sep = connectUrl.includes('?') ? '&' : '?'
+      connectUrl = connectUrl + sep + 'token=' + this.authToken
+    }
+
     this.reconnectAttempts = 0
     this.setStatus(ConnectionStatus.CONNECTING)
-    this.doConnect(url)
+    this.doConnect(connectUrl)
   }
 
   private doConnect(url: string): void {
@@ -99,6 +143,7 @@ export class SocketManager {
         if (err) {
           console.error('WebSocket open error:', err.message)
           this.setStatus(ConnectionStatus.ERROR)
+          this.notifyError('Connection failed: ' + err.message)
           this.tryReconnect()
           return
         }
@@ -106,6 +151,7 @@ export class SocketManager {
         this.setStatus(ConnectionStatus.CONNECTED)
         this.reconnectAttempts = 0
         this.flushPendingMessages()
+        this.startPing()
       })
 
       this.ws.on('message', (err: BusinessError, value: string | ArrayBuffer) => {
@@ -117,8 +163,8 @@ export class SocketManager {
           const msgStr = typeof value === 'string' ? value : ''
           if (msgStr) {
             const msg: WsMessage = JSON.parse(msgStr) as WsMessage
-            // Handle pong
             if (msg.type === 'pong') {
+              this.lastPongTime = Date.now()
               return
             }
             this.notifyMessage(msg)
@@ -131,8 +177,19 @@ export class SocketManager {
       this.ws.on('close', (err: BusinessError, value: webSocket.CloseResult) => {
         console.info('WebSocket closed, code:', value.code, 'reason:', value.reason)
         this.ws = null
+        this.stopPing()
+
+        // 4001 = auth rejected
+        if (value.code === 4001) {
+          this.setStatus(ConnectionStatus.ERROR)
+          this.notifyError('Auth failed: invalid token')
+          return // don't reconnect
+        }
+
         if (this.status === ConnectionStatus.CONNECTED) {
           this.tryReconnect()
+        } else {
+          this.setStatus(ConnectionStatus.DISCONNECTED)
         }
       })
 
@@ -140,6 +197,7 @@ export class SocketManager {
         console.error('WebSocket error:', err.message)
         if (this.status === ConnectionStatus.CONNECTING) {
           this.setStatus(ConnectionStatus.ERROR)
+          this.notifyError('Connection error: ' + err.message)
           this.tryReconnect()
         }
       })
@@ -151,13 +209,37 @@ export class SocketManager {
         if (err) {
           console.error('WebSocket connect failed:', err.message)
           this.setStatus(ConnectionStatus.ERROR)
+          this.notifyError('Connect failed: ' + err.message)
           this.tryReconnect()
         }
       })
     } catch (e) {
       console.error('Failed to create WebSocket:', e)
       this.setStatus(ConnectionStatus.ERROR)
+      this.notifyError('Socket creation failed')
       this.tryReconnect()
+    }
+  }
+
+  private startPing(): void {
+    this.lastPongTime = Date.now()
+    this.pingTimer = setInterval(() => {
+      if (this.ws && this.status === ConnectionStatus.CONNECTED) {
+        this.sendRaw(JSON.stringify({ type: 'ping', payload: {} }))
+        // Check for ping timeout
+        if (Date.now() - this.lastPongTime > PING_INTERVAL_MS * 2) {
+          console.warn('Ping timeout, reconnecting...')
+          this.disconnect()
+          this.tryReconnect()
+        }
+      }
+    }, PING_INTERVAL_MS)
+  }
+
+  private stopPing(): void {
+    if (this.pingTimer) {
+      clearInterval(this.pingTimer)
+      this.pingTimer = null
     }
   }
 
@@ -165,14 +247,24 @@ export class SocketManager {
     if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
       console.error('Max reconnect attempts reached')
       this.setStatus(ConnectionStatus.DISCONNECTED)
+      this.notifyError('Unable to connect after ' + MAX_RECONNECT_ATTEMPTS + ' attempts')
       return
     }
     this.reconnectAttempts++
     this.setStatus(ConnectionStatus.RECONNECTING)
-    console.info('Reconnecting in', RECONNECT_DELAY_MS, 'ms, attempt', this.reconnectAttempts)
+    const delay = RECONNECT_DELAY_MS * Math.min(this.reconnectAttempts, 5)
+    console.info('Reconnecting in', delay, 'ms, attempt', this.reconnectAttempts)
+
+    // Build URL with token again
+    let connectUrl = this.serverUrl
+    if (this.authToken) {
+      const sep = connectUrl.includes('?') ? '&' : '?'
+      connectUrl = connectUrl + sep + 'token=' + this.authToken
+    }
+
     this.reconnectTimer = setTimeout(() => {
-      this.doConnect(this.serverUrl)
-    }, RECONNECT_DELAY_MS)
+      this.doConnect(connectUrl)
+    }, delay)
   }
 
   private flushPendingMessages(): void {
@@ -211,7 +303,8 @@ export class SocketManager {
       clearTimeout(this.reconnectTimer)
       this.reconnectTimer = null
     }
-    this.reconnectAttempts = MAX_RECONNECT_ATTEMPTS // prevent reconnect
+    this.stopPing()
+    this.reconnectAttempts = MAX_RECONNECT_ATTEMPTS
     if (this.ws) {
       this.ws.close({ code: 1000, reason: 'Client disconnect' }, (err: BusinessError) => {
         if (err) {
