@@ -115,5 +115,10 @@ export const ANIM_DURATION_NORMAL = 250
 export const ANIM_DURATION_SLOW = 350
 
 // ── Shadows (elevation) ──
-export const SHADOW_CARD = { radius: 8, color: '#00000040', offsetY: 2 }
-export const SHADOW_MODAL = { radius: 24, color: '#00000060', offsetY: 8 }
+export interface ShadowConfig {
+  radius: number
+  color: string
+  offsetY: number
+}
+export const SHADOW_CARD: ShadowConfig = { radius: 8, color: '#00000040', offsetY: 2 }
+export const SHADOW_MODAL: ShadowConfig = { radius: 24, color: '#00000060', offsetY: 8 }

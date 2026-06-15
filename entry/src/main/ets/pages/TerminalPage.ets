@@ -78,18 +78,6 @@ export struct TerminalPage {
     }, 50)
   }
 
-  handleKeyEvent(event: KeyEvent): void {
-    if (event.type === KeyType.Down) {
-      if (event.keyCode === KeyCode.DpadUp && !this.isRunning) {
-        const prev = this.termVM.navigateHistory(-1)
-        if (prev) this.commandInput = prev
-      } else if (event.keyCode === KeyCode.DpadDown && !this.isRunning) {
-        const next = this.termVM.navigateHistory(1)
-        if (next) this.commandInput = next
-      }
-    }
-  }
-
   build() {
     Column() {
       // ── Header ──
@@ -188,6 +176,5 @@ export struct TerminalPage {
     .width('100%')
     .height('100%')
     .backgroundColor(COLOR_BG_PRIMARY)
-    .onKeyEvent((event: KeyEvent) => { this.handleKeyEvent(event) })
   }
 }

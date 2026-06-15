@@ -290,7 +290,7 @@ export struct FilesPage {
                 .fontColor(COLOR_TEXT_MUTED)
                 .width('100%')
                 .textAlign(TextAlign.Center)
-                .padding(SPACE_3XL)
+                .padding(32)
             }
           }
         }

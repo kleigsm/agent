@@ -225,7 +225,10 @@ export class SocketManager {
     this.lastPongTime = Date.now()
     this.pingTimer = setInterval(() => {
       if (this.ws && this.status === ConnectionStatus.CONNECTED) {
-        this.sendRaw(JSON.stringify({ type: 'ping', payload: {} }))
+        let pingMsg = new WsMessage()
+            pingMsg.type = 'ping'
+            pingMsg.payload = {}
+            this.sendRaw(JSON.stringify(pingMsg))
         // Check for ping timeout
         if (Date.now() - this.lastPongTime > PING_INTERVAL_MS * 2) {
           console.warn('Ping timeout, reconnecting...')
