@@ -1,12 +1,13 @@
 {
   "app": {
     "signingConfigs": [],
+    "compileSdkVersion": "6.0.2(22)",
     "products": [
       {
         "name": "default",
-        "compileSdkVersion": "6.0.2(22)",
-        "compatibleSdkVersion": "6.0.0(20)",
-        "targetSdkVersion": "6.0.0(20)",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "6.0.2(22)",
+        "targetSdkVersion": "6.0.2(22)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
           "strictMode": {
