@@ -42,44 +42,44 @@ export interface QuickCommand {
   prompt: string
 }
 
-// ── Color palette (GitHub-dark inspired) ──
+// ── Color palette (Light theme) ──
 // Backgrounds
-export const COLOR_BG_PRIMARY = '#0D1117'
-export const COLOR_BG_SECONDARY = '#161B22'
-export const COLOR_BG_TERTIARY = '#21262D'
-export const COLOR_BG_INPUT = '#0D1117'
-export const COLOR_BG_HOVER = '#1C2128'
+export const COLOR_BG_PRIMARY = '#F5F5F7'
+export const COLOR_BG_SECONDARY = '#FFFFFF'
+export const COLOR_BG_TERTIARY = '#EBEBED'
+export const COLOR_BG_INPUT = '#F0F0F2'
+export const COLOR_BG_HOVER = '#E8E8EC'
 
 // Text
-export const COLOR_TEXT_PRIMARY = '#E6EDF3'
-export const COLOR_TEXT_SECONDARY = '#8B949E'
-export const COLOR_TEXT_MUTED = '#484F58'
-export const COLOR_TEXT_INVERSE = '#0D1117'
+export const COLOR_TEXT_PRIMARY = '#1D1D1F'
+export const COLOR_TEXT_SECONDARY = '#6E6E73'
+export const COLOR_TEXT_MUTED = '#AEAEB2'
+export const COLOR_TEXT_INVERSE = '#FFFFFF'
 
 // Accents
-export const COLOR_ACCENT_BLUE = '#58A6FF'
-export const COLOR_ACCENT_PURPLE = '#7C72FF'
-export const COLOR_ACCENT_GREEN = '#3FB950'
-export const COLOR_ACCENT_RED = '#F85149'
-export const COLOR_ACCENT_ORANGE = '#D29922'
-export const COLOR_ACCENT_CYAN = '#39D2C0'
-export const COLOR_ACCENT_PINK = '#DB61A2'
+export const COLOR_ACCENT_BLUE = '#007AFF'
+export const COLOR_ACCENT_PURPLE = '#AF52DE'
+export const COLOR_ACCENT_GREEN = '#34C759'
+export const COLOR_ACCENT_RED = '#FF3B30'
+export const COLOR_ACCENT_ORANGE = '#FF9500'
+export const COLOR_ACCENT_CYAN = '#5AC8FA'
+export const COLOR_ACCENT_PINK = '#FF2D55'
 
 // Bubbles
-export const COLOR_USER_BUBBLE = '#1F6FEB'
-export const COLOR_AI_BUBBLE = '#21262D'
+export const COLOR_USER_BUBBLE = '#007AFF'
+export const COLOR_AI_BUBBLE = '#F0F0F2'
 export const COLOR_BUBBLE_USER_TEXT = '#FFFFFF'
-export const COLOR_BUBBLE_AI_TEXT = '#E6EDF3'
+export const COLOR_BUBBLE_AI_TEXT = '#1D1D1F'
 
 // Borders & dividers
-export const COLOR_BORDER = '#30363D'
-export const COLOR_BORDER_FOCUS = '#58A6FF'
-export const COLOR_DIVIDER = '#21262D'
+export const COLOR_BORDER = '#D1D1D6'
+export const COLOR_BORDER_FOCUS = '#007AFF'
+export const COLOR_DIVIDER = '#E5E5EA'
 
 // Status
-export const COLOR_STATUS_ONLINE = '#3FB950'
-export const COLOR_STATUS_OFFLINE = '#F85149'
-export const COLOR_STATUS_WARNING = '#D29922'
+export const COLOR_STATUS_ONLINE = '#34C759'
+export const COLOR_STATUS_OFFLINE = '#FF3B30'
+export const COLOR_STATUS_WARNING = '#FF9500'
 
 // Gradients (start, end)
 export const GRADIENT_ACCENT: [string, string] = ['#58A6FF', '#7C72FF']
@@ -124,9 +124,9 @@ export const SHADOW_CARD: ShadowConfig = { radius: 8, color: '#00000040', offset
 export const SHADOW_MODAL: ShadowConfig = { radius: 24, color: '#00000060', offsetY: 8 }
 
 // ── Glass morphism ──
-export const COLOR_GLASS_BG = 'rgba(22, 27, 34, 0.85)'
-export const COLOR_GLASS_BORDER = 'rgba(48, 54, 61, 0.6)'
-export const COLOR_GLASS_HIGHLIGHT = 'rgba(255, 255, 255, 0.04)'
+export const COLOR_GLASS_BG = 'rgba(255, 255, 255, 0.82)'
+export const COLOR_GLASS_BORDER = 'rgba(0, 0, 0, 0.08)'
+export const COLOR_GLASS_HIGHLIGHT = 'rgba(0, 0, 0, 0.02)'
 
 // ── Gradients ──
 export interface GradientStop { color: string; offset: number }

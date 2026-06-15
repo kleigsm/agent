@@ -104,7 +104,7 @@ export struct TerminalPage {
       Scroll(this.outputScroller) {
         Text(this.outputText || '就绪。输入命令在远程 PC 上执行。\n')
           .fontSize(13)
-          .fontColor(COLOR_TEXT_PRIMARY)
+          .fontColor('#E5E5EA')
           .fontFamily('monospace')
           .padding(SPACE_MD)
           .width('100%')
@@ -113,7 +113,7 @@ export struct TerminalPage {
       }
       .layoutWeight(1)
       .width('100%')
-      .backgroundColor('#0C0D10')
+      .backgroundColor('#1D1D1F')
       .borderRadius(RADIUS_MD)
       .margin({ left: SPACE_SM, right: SPACE_SM, top: SPACE_SM, bottom: SPACE_SM })
 
