@@ -198,7 +198,7 @@ export struct ChatPage {
       // ── Quick commands ──
       if (this.messages.length === 0) {
         Column() {
-          Text('Quick Commands')
+          Text('Tap a command or type below')
             .fontSize(FONT_BODY_SM)
             .fontColor(COLOR_TEXT_MUTED)
             .margin({ bottom: SPACE_MD })
@@ -210,14 +210,14 @@ export struct ChatPage {
               GridItem() {
                 Column() {
                   Text(cmd.icon)
-                    .fontSize(24)
-                    .margin({ bottom: SPACE_XS })
+                    .fontSize(22)
+                    .margin({ bottom: 2 })
                   Text(cmd.label)
-                    .fontSize(FONT_CAPTION)
+                    .fontSize(10)
                     .fontColor(COLOR_TEXT_SECONDARY)
                 }
                 .width('100%')
-                .padding({ top: SPACE_MD, bottom: SPACE_MD })
+                .padding({ top: SPACE_SM, bottom: SPACE_SM })
                 .justifyContent(FlexAlign.Center)
                 .backgroundColor(COLOR_BG_SECONDARY)
                 .borderRadius(RADIUS_MD)
@@ -233,9 +233,10 @@ export struct ChatPage {
           .columnsGap(SPACE_SM)
           .rowsGap(SPACE_SM)
           .width('100%')
+          .height(120)
         }
         .width('100%')
-        .padding({ left: SPACE_LG, right: SPACE_LG, top: SPACE_LG })
+        .padding({ left: SPACE_LG, right: SPACE_LG, top: SPACE_SM, bottom: SPACE_XS })
       }
 
       // ── Message list ──
