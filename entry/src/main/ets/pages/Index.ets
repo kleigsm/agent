@@ -41,7 +41,7 @@ struct Index {
         .fontColor(this.currentTabIndex === tab.index ? COLOR_ACCENT_BLUE : COLOR_TEXT_MUTED)
         .margin({ top: 2 })
     }
-    .width('100%')
+    .layoutWeight(1)
     .height(52)
     .justifyContent(FlexAlign.Center)
     .borderRadius(RADIUS_MD)
