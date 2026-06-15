@@ -1,0 +1,11 @@
+string EntryAbility_desc 0x01000001
+string EntryAbility_label 0x01000002
+string app_name 0x01000003
+string module_desc 0x01000004
+string tab_chat 0x01000005
+string tab_files 0x01000006
+string tab_settings 0x01000007
+string tab_terminal 0x01000008
+color start_window_bg 0x0100000a
+media app_icon 0x01000000
+profile main_pages 0x01000009
