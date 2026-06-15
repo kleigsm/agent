@@ -122,3 +122,15 @@ export interface ShadowConfig {
 }
 export const SHADOW_CARD: ShadowConfig = { radius: 8, color: '#00000040', offsetY: 2 }
 export const SHADOW_MODAL: ShadowConfig = { radius: 24, color: '#00000060', offsetY: 8 }
+
+// ── Glass morphism ──
+export const COLOR_GLASS_BG = 'rgba(22, 27, 34, 0.85)'
+export const COLOR_GLASS_BORDER = 'rgba(48, 54, 61, 0.6)'
+export const COLOR_GLASS_HIGHLIGHT = 'rgba(255, 255, 255, 0.04)'
+
+// ── Gradients ──
+export interface GradientStop { color: string; offset: number }
+export const GRADIENT_BLUE_PURPLE: string[] = [COLOR_ACCENT_BLUE, COLOR_ACCENT_PURPLE]
+
+// ── Breathing dot ──
+export const BREATH_DURATION = 2000 // ms per cycle

@@ -1,10 +1,9 @@
 import {
-  COLOR_BG_PRIMARY, COLOR_BG_SECONDARY, COLOR_BG_INPUT,
-  COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED,
-  COLOR_ACCENT_BLUE, COLOR_BORDER,
-  SPACE_XS, SPACE_SM, SPACE_MD, SPACE_LG,
-  RADIUS_MD, RADIUS_LG, FONT_CAPTION, FONT_BODY_SM,
-  ANIM_DURATION_NORMAL
+  COLOR_BG_PRIMARY, COLOR_BG_SECONDARY,
+  COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED,
+  COLOR_ACCENT_BLUE, COLOR_BORDER, COLOR_GLASS_BG,
+  SPACE_XS, SPACE_SM, RADIUS_MD,
+  FONT_CAPTION, ANIM_DURATION_NORMAL
 } from '../common/Constants';
 import { ChatPage } from './ChatPage';
 import { FilesPage } from './FilesPage';
@@ -18,10 +17,10 @@ interface TabItem {
 }
 
 const TABS: TabItem[] = [
-  { index: 0, title: 'Chat', icon: '💬' },
-  { index: 1, title: 'Files', icon: '📁' },
-  { index: 2, title: 'Term', icon: '>_' },
-  { index: 3, title: 'Settings', icon: '⚙' },
+  { index: 0, title: '对话', icon: '💬' },
+  { index: 1, title: '文件', icon: '📁' },
+  { index: 2, title: '终端', icon: '>_' },
+  { index: 3, title: '设置', icon: '⚙' },
 ]
 
 @Entry
@@ -33,26 +32,20 @@ struct Index {
   TabBarItem(tab: TabItem) {
     Column() {
       Text(tab.icon)
-        .fontSize(this.currentTabIndex === tab.index ? 20 : 18)
-        .scale(this.currentTabIndex === tab.index ? { x: 1.1, y: 1.1 } : { x: 1, y: 1 })
-        .animation({ duration: ANIM_DURATION_NORMAL, curve: Curve.EaseOut })
-
+        .fontSize(18)
       Text(tab.title)
-        .fontSize(FONT_CAPTION)
-        .fontWeight(this.currentTabIndex === tab.index ? FontWeight.Bold : FontWeight.Normal)
+        .fontSize(10)
+        .fontWeight(this.currentTabIndex === tab.index ? FontWeight.Medium : FontWeight.Normal)
         .fontColor(this.currentTabIndex === tab.index ? COLOR_ACCENT_BLUE : COLOR_TEXT_MUTED)
         .margin({ top: 2 })
-        .animation({ duration: ANIM_DURATION_NORMAL })
     }
     .width('100%')
-    .height(52)
+    .height(48)
     .justifyContent(FlexAlign.Center)
     .borderRadius(RADIUS_MD)
-    .backgroundColor(this.currentTabIndex === tab.index ? COLOR_BG_SECONDARY : Color.Transparent)
-    .margin({ top: SPACE_XS, bottom: SPACE_XS })
-    .onClick(() => {
-      this.currentTabIndex = tab.index
-    })
+    .backgroundColor(this.currentTabIndex === tab.index ? COLOR_GLASS_BG : Color.Transparent)
+    .onClick(() => { this.currentTabIndex = tab.index })
+    .animation({ duration: ANIM_DURATION_NORMAL, curve: Curve.EaseOut })
   }
 
   build() {
@@ -63,10 +56,8 @@ struct Index {
         }, (tab: TabItem) => tab.index.toString())
       }
       .width('100%')
-      .padding({ left: SPACE_SM, right: SPACE_SM })
+      .padding({ left: SPACE_SM, right: SPACE_SM, top: 2, bottom: 2 })
       .backgroundColor(COLOR_BG_PRIMARY)
-
-      Divider().color(COLOR_BORDER).width('100%').height(0.5)
 
       Tabs({ index: this.currentTabIndex }) {
         TabContent() { ChatPage() }
@@ -77,9 +68,7 @@ struct Index {
       .barHeight(0)
       .width('100%')
       .layoutWeight(1)
-      .onChange((index: number) => {
-        this.currentTabIndex = index
-      })
+      .onChange((index: number) => { this.currentTabIndex = index })
       .animationDuration(ANIM_DURATION_NORMAL)
     }
     .width('100%')
