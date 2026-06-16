@@ -26,14 +26,14 @@ export const DISCOVERY_TIMEOUT_MS = 3000
 
 // ── Quick commands ──
 export const QUICK_COMMANDS: QuickCommand[] = [
-  { icon: '📦', label: '构建', prompt: 'Build the project and report any errors' },
-  { icon: '▶', label: '运行', prompt: 'Run the project on the simulator' },
+  { icon: '🏗️', label: '构建', prompt: 'Build the project and report any errors' },
+  { icon: '🚀', label: '运行', prompt: 'Run the project on the simulator' },
   { icon: '🧪', label: '测试', prompt: 'Run all tests for this project' },
-  { icon: '📋', label: '日志', prompt: 'Show recent build or runtime logs' },
-  { icon: '🔍', label: '检查', prompt: 'Check the code for linting issues' },
-  { icon: '📂', label: '结构', prompt: 'Show the project file structure' },
-  { icon: '🔧', label: '修复', prompt: 'Analyze and fix any code issues you find' },
-  { icon: '📝', label: '解释', prompt: 'Explain the architecture of the currently open file' },
+  { icon: '📜', label: '日志', prompt: 'Show recent build or runtime logs' },
+  { icon: '🔎', label: '检查', prompt: 'Check the code for linting issues' },
+  { icon: '🗂️', label: '结构', prompt: 'Show the project file structure' },
+  { icon: '🪄', label: '修复', prompt: 'Analyze and fix any code issues you find' },
+  { icon: '💡', label: '解释', prompt: 'Explain the architecture of the currently open file' },
 ]
 
 export interface QuickCommand {
