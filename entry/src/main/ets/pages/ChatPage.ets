@@ -1,11 +1,15 @@
 import { SocketManager, ConnectionStatus } from '../common/SocketManager';
 import { ChatViewModel } from '../viewmodel/ChatViewModel';
 import {
+  EVENT_CHAT_SEND, EVENT_CHAT_STREAM, EVENT_CHAT_DONE, EVENT_CHAT_ERROR,
+  COLOR_BG_PRIMARY, COLOR_BG_SECONDARY, COLOR_BG_INPUT,
+  COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED,
+  COLOR_ACCENT_BLUE, COLOR_ACCENT_GREEN, COLOR_ACCENT_RED,
+  COLOR_USER_BUBBLE, COLOR_BUBBLE_USER_TEXT, COLOR_BUBBLE_AI_TEXT,
+  COLOR_AI_BUBBLE, COLOR_BORDER, COLOR_GLASS_BG, COLOR_GLASS_BORDER,
   SPACE_XS, SPACE_SM, SPACE_MD, SPACE_LG, SPACE_XL,
-  RADIUS_SM, RADIUS_MD, RADIUS_LG, RADIUS_XL,
-  FONT_CAPTION, FONT_BODY_SM, FONT_BODY, FONT_BODY_LG,
-  ANIM_DURATION_FAST, ANIM_DURATION_NORMAL, BREATH_DURATION,
-  QUICK_COMMANDS, QuickCommand, getTheme, ThemeColors, LIGHT_THEME, DARK_THEME
+  RADIUS_XL, ANIM_DURATION_NORMAL,
+  QUICK_COMMANDS, QuickCommand
 } from '../common/Constants';
 import { WsMessage, ChatMessage } from '../common/Models';
 import { pasteboard } from '@kit.BasicServicesKit';
@@ -13,7 +17,6 @@ import { pasteboard } from '@kit.BasicServicesKit';
 @Component
 struct MessageBubble {
   @ObjectLink msg: ChatMessage
-  @Prop theme: ThemeColors
 
   formatTime(ts: number): string {
     let d = new Date(ts)
@@ -23,48 +26,47 @@ struct MessageBubble {
   build() {
     Column() {
       Row() {
-        if (this.msg.role === 'user') Blank()
+        if (this.msg.role === 'user') { Blank() }
         Column() {
           Row() {
             if (this.msg.role === 'assistant') {
               Text(this.msg.isStreaming ? '●' : '').fontSize(8)
-                .fontColor(this.theme.accentBlue).margin({ right: SPACE_XS })
+                .fontColor(COLOR_ACCENT_BLUE).margin({ right: SPACE_XS })
             }
             Text(this.msg.role === 'user' ? '我' : 'Claude').fontSize(10)
-              .fontColor(this.theme.textMuted).fontWeight(FontWeight.Medium)
-            Text(' · ' + this.formatTime(this.msg.timestamp)).fontSize(10)
-              .fontColor(this.theme.textMuted)
+              .fontColor(COLOR_TEXT_MUTED).fontWeight(FontWeight.Medium)
+            Text(' · ' + this.formatTime(this.msg.timestamp)).fontSize(10).fontColor(COLOR_TEXT_MUTED)
           }.margin({ bottom: 4 })
           .alignSelf(this.msg.role === 'user' ? ItemAlign.End : ItemAlign.Start)
 
           Column() {
             Text(this.msg.content || (this.msg.isStreaming ? '思考中...' : '')).fontSize(14)
-              .fontColor(this.msg.role === 'user' ? '#FFFFFF' : this.theme.aiText)
+              .fontColor(this.msg.role === 'user' ? COLOR_BUBBLE_USER_TEXT : COLOR_BUBBLE_AI_TEXT)
               .padding({ left: 14, right: 14, top: 10, bottom: 10 }).textAlign(TextAlign.Start).lineHeight(20)
           }
           .borderRadius(this.msg.role === 'user' ?
             ({ topLeft: 18, topRight: 6, bottomLeft: 18, bottomRight: 18 }) :
             ({ topLeft: 6, topRight: 18, bottomLeft: 18, bottomRight: 18 }))
-          .backgroundColor(this.msg.role === 'user' ? this.theme.accentBlue : this.theme.aiBubble)
+          .backgroundColor(this.msg.role === 'user' ? COLOR_USER_BUBBLE : COLOR_AI_BUBBLE)
           .borderWidth(this.msg.role === 'assistant' ? 1 : 0)
-          .borderColor(this.msg.role === 'assistant' ? this.theme.border : Color.Transparent)
-          .constraintSize({ maxWidth: '82%' })
+          .borderColor(COLOR_BORDER).constraintSize({ maxWidth: '82%' })
           .onClick(() => {
             if (this.msg.role === 'assistant' && this.msg.content && !this.msg.isStreaming) {
-              let pb = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.msg.content)
-              pasteboard.getSystemPasteboard().setData(pb)
+              pasteboard.getSystemPasteboard().setData(
+                pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.msg.content)
+              )
             }
           })
 
           if (this.msg.isStreaming) {
             Row() {
-              LoadingProgress().width(12).height(12).color(this.theme.accentBlue)
-              Text(' 生成中...').fontSize(10).fontColor(this.theme.textMuted)
+              LoadingProgress().width(12).height(12).color(COLOR_ACCENT_BLUE)
+              Text(' 生成中...').fontSize(10).fontColor(COLOR_TEXT_MUTED)
             }.margin({ top: 4 }).alignSelf(ItemAlign.Start)
           }
         }
         .alignItems(this.msg.role === 'user' ? HorizontalAlign.End : HorizontalAlign.Start)
-        if (this.msg.role === 'assistant') Blank()
+        if (this.msg.role === 'assistant') { Blank() }
       }.width('100%')
     }.width('100%').padding({ top: 6, bottom: 6 })
     .alignItems(this.msg.role === 'user' ? HorizontalAlign.End : HorizontalAlign.Start)
@@ -79,69 +81,44 @@ export struct ChatPage {
   @State connectionStatus: ConnectionStatus = ConnectionStatus.DISCONNECTED
   @State showQuickCommands: boolean = true
   @State showScrollBtn: boolean = false
-  @StorageLink('isDarkMode') isDarkMode: boolean = false
-  private theme: ThemeColors = LIGHT_THEME
   private socketManager: SocketManager = SocketManager.getInstance()
   private chatVM: ChatViewModel = new ChatViewModel()
   private scroller: Scroller = new Scroller()
   private streamingMsgId: string = ''
-  private onStatusFn: (status: ConnectionStatus) => void = () => {}
-  private onMsgFn: (msg: WsMessage) => void = () => {}
+  private onStatusFn: (s: ConnectionStatus) => void = () => {}
+  private onMsgFn: (m: WsMessage) => void = () => {}
 
   aboutToAppear(): void {
     this.connectionStatus = this.socketManager.getStatus()
     this.onStatusFn = (s: ConnectionStatus) => { this.connectionStatus = s }
     this.onMsgFn = (m: WsMessage) => { this.handleMessage(m) }
-    this.socketManager.onStatusChange(this.onStatusFn)
-    this.socketManager.onMessage(this.onMsgFn)
+    this.socketManager.onStatusChange(this.onStatusFn); this.socketManager.onMessage(this.onMsgFn)
   }
-
-  aboutToDisappear(): void {
-    this.socketManager.offStatusChange(this.onStatusFn)
-    this.socketManager.offMessage(this.onMsgFn)
-  }
+  aboutToDisappear(): void { this.socketManager.offStatusChange(this.onStatusFn); this.socketManager.offMessage(this.onMsgFn) }
 
   handleMessage(msg: WsMessage): void {
-    if (msg.type === 'chat:stream') {
-      let c = msg.payload['chunk'] as string
-      this.chatVM.appendToMessage(this.streamingMsgId, c, undefined)
-      this.messages = [...this.chatVM.messages]
-      this.showQuickCommands = false; this.scrollToBottom()
-    } else if (msg.type === 'chat:done') {
-      this.chatVM.finishMessage(this.streamingMsgId)
-      this.isStreaming = false; this.showQuickCommands = false
+    if (msg.type === EVENT_CHAT_STREAM) {
+      this.chatVM.appendToMessage(this.streamingMsgId, msg.payload['chunk'] as string, undefined)
+      this.messages = [...this.chatVM.messages]; this.showQuickCommands = false; this.scrollToBottom()
+    } else if (msg.type === EVENT_CHAT_DONE) {
+      this.chatVM.finishMessage(this.streamingMsgId); this.isStreaming = false
       this.messages = [...this.chatVM.messages]; this.streamingMsgId = ''; this.scrollToBottom()
-    } else if (msg.type === 'chat:error') {
-      this.chatVM.finishMessage(this.streamingMsgId)
-      this.isStreaming = false; this.messages = [...this.chatVM.messages]; this.streamingMsgId = ''
+    } else if (msg.type === EVENT_CHAT_ERROR) {
+      this.chatVM.finishMessage(this.streamingMsgId); this.isStreaming = false
+      this.messages = [...this.chatVM.messages]; this.streamingMsgId = ''
     }
   }
 
   sendMessage(text?: string): void {
-    let txt = (text || this.inputText).trim()
-    if (!txt || this.isStreaming) return
-    if (this.connectionStatus !== ConnectionStatus.CONNECTED) return
-    this.chatVM.addUserMessage(txt)
-    this.streamingMsgId = this.chatVM.startAssistantMessage()
-    this.messages = [...this.chatVM.messages]; this.inputText = ''
-    this.isStreaming = true; this.showQuickCommands = false
-    let p = new Object() as Record<string, Object>
-    p['message'] = txt
-    this.socketManager.send('chat:send', p)
-    this.scrollToBottom()
+    let t = (text || this.inputText).trim()
+    if (!t || this.isStreaming || this.connectionStatus !== ConnectionStatus.CONNECTED) return
+    this.chatVM.addUserMessage(t); this.streamingMsgId = this.chatVM.startAssistantMessage()
+    this.messages = [...this.chatVM.messages]; this.inputText = ''; this.isStreaming = true
+    let p = new Object() as Record<string, Object>; p['message'] = t
+    this.socketManager.send(EVENT_CHAT_SEND, p); this.showQuickCommands = false; this.scrollToBottom()
   }
-
   sendQuickCommand(cmd: QuickCommand): void { this.sendMessage(cmd.prompt) }
-
-  makePayload(): Record<string, Object> { return new Object() as Record<string, Object> }
-
-  scrollToBottom(): void {
-    setTimeout(() => { this.scroller.scrollEdge(Edge.Bottom); this.showScrollBtn = false }, 80)
-  }
-
-  onScroll(offset: number): void {
-    this.showScrollBtn = offset < -100
-  }
+  scrollToBottom(): void { setTimeout(() => { this.scroller.scrollEdge(Edge.Bottom); this.showScrollBtn = false }, 80) }
 
   statusLabel(): string {
     switch (this.connectionStatus) {
@@ -153,44 +130,36 @@ export struct ChatPage {
   }
 
   build() {
-    this.theme = this.isDarkMode ? DARK_THEME : LIGHT_THEME
-
     Column() {
-      // Status bar
       Row() {
         Circle({ width: 10, height: 10 })
-          .fill(this.connectionStatus === ConnectionStatus.CONNECTED
-            ? this.theme.accentGreen : this.theme.accentRed)
+          .fill(this.connectionStatus === ConnectionStatus.CONNECTED ? COLOR_ACCENT_GREEN : COLOR_ACCENT_RED)
           .shadow(this.connectionStatus === ConnectionStatus.CONNECTED
-            ? { radius: 6, color: this.theme.accentGreen + '60', offsetY: 0 }
+            ? { radius: 6, color: COLOR_ACCENT_GREEN + '60', offsetY: 0 }
             : { radius: 0, color: '#00000000', offsetY: 0 })
-        Text(' ' + this.statusLabel()).fontSize(12).fontColor(this.theme.textSecondary).margin({ left: SPACE_XS })
+        Text(' ' + this.statusLabel()).fontSize(12).fontColor(COLOR_TEXT_SECONDARY).margin({ left: SPACE_XS })
         Blank()
-        Text('清空').fontSize(12).fontColor(this.theme.textSecondary)
+        Text('清空').fontSize(12).fontColor(COLOR_TEXT_SECONDARY)
           .padding({ left: 12, right: 12, top: 4, bottom: 4 }).borderRadius(10)
-          .backgroundColor(this.theme.glassBg)
+          .backgroundColor(COLOR_GLASS_BG)
           .onClick(() => { this.chatVM.clearMessages(); this.messages = []; this.showQuickCommands = true })
       }
       .width('100%').padding({ left: SPACE_LG, right: SPACE_LG, top: SPACE_SM + 2, bottom: SPACE_SM })
-      .backgroundColor(this.theme.glassBg).backdropBlur(12)
+      .backgroundColor(COLOR_GLASS_BG).backdropBlur(12)
 
-      // Welcome + Quick commands
-      if (this.showQuickCommands && this.messages.length === 0) {
+      if (this.showQuickCommands) {
         Column() {
-          Text('👋 你好！我能帮你做什么？').fontSize(FONT_BODY_LG)
-            .fontColor(this.theme.textPrimary).fontWeight(FontWeight.Bold).margin({ bottom: 4 })
-          Text('选择一个快捷指令，或直接输入你的需求').fontSize(12).fontColor(this.theme.textMuted).margin({ bottom: SPACE_MD })
-
+          Text('👋 你好！我能帮你做什么？').fontSize(16).fontColor(COLOR_TEXT_PRIMARY).fontWeight(FontWeight.Bold)
+          Text('选择一个快捷指令，或直接输入你的需求').fontSize(12).fontColor(COLOR_TEXT_MUTED).margin({ top: 4, bottom: SPACE_MD })
           Grid() {
             ForEach(QUICK_COMMANDS, (cmd: QuickCommand) => {
               GridItem() {
                 Column() {
                   Text(cmd.icon).fontSize(20)
-                  Text(cmd.label).fontSize(10).fontColor(this.theme.textSecondary).margin({ top: 2 })
+                  Text(cmd.label).fontSize(10).fontColor(COLOR_TEXT_SECONDARY).margin({ top: 2 })
                 }
                 .width('100%').height(56).justifyContent(FlexAlign.Center)
-                .backgroundColor(this.theme.glassBg).borderRadius(12)
-                .borderWidth(1).borderColor(this.theme.glassBorder)
+                .backgroundColor(COLOR_GLASS_BG).borderRadius(12).borderWidth(1).borderColor(COLOR_GLASS_BORDER)
                 .onClick(() => { this.sendQuickCommand(cmd) })
               }
             }, (cmd: QuickCommand) => cmd.label)
@@ -200,11 +169,10 @@ export struct ChatPage {
         .width('100%').padding({ left: SPACE_LG, right: SPACE_LG, top: SPACE_LG, bottom: SPACE_XS + 4 })
       }
 
-      // Messages
       Stack() {
         List({ scroller: this.scroller }) {
           ForEach(this.messages, (msg: ChatMessage) => {
-            ListItem() { MessageBubble({ msg: msg, theme: this.theme }) }
+            ListItem() { MessageBubble({ msg: msg }) }
           }, (msg: ChatMessage) => msg.id)
         }
         .layoutWeight(1).width('100%').padding({ left: SPACE_MD, right: SPACE_MD })
@@ -212,37 +180,32 @@ export struct ChatPage {
 
         if (this.showScrollBtn && this.messages.length > 3) {
           Column() {
-            Button({ type: ButtonType.Circle }) {
-              Text('↓').fontSize(16).fontColor(this.theme.accentBlue)
-            }
-            .width(36).height(36).backgroundColor(this.theme.bgSecondary)
+            Button({ type: ButtonType.Circle }) { Text('↓').fontSize(16).fontColor(COLOR_ACCENT_BLUE) }
+            .width(36).height(36).backgroundColor(COLOR_BG_SECONDARY)
             .shadow({ radius: 4, color: '#00000015', offsetY: 2 })
             .onClick(() => { this.scrollToBottom() })
           }.align(Alignment.BottomEnd).padding({ right: SPACE_MD, bottom: SPACE_SM })
         }
       }.layoutWeight(1).width('100%')
 
-      // Input
       Row() {
         Row() {
           TextInput({ placeholder: '输入需求...', text: this.inputText })
-            .placeholderColor(this.theme.textMuted).fontColor(this.theme.textPrimary).fontSize(14)
+            .placeholderColor(COLOR_TEXT_MUTED).fontColor(COLOR_TEXT_PRIMARY).fontSize(14)
             .backgroundColor(Color.Transparent).layoutWeight(1).height(44).borderRadius(0)
             .onChange((v: string) => { this.inputText = v }).onSubmit(() => { this.sendMessage() })
         }
-        .layoutWeight(1).backgroundColor(this.theme.bgSecondary).borderRadius(22)
-        .borderWidth(1).borderColor(this.theme.border).padding({ left: SPACE_LG }).height(44)
-
+        .layoutWeight(1).backgroundColor(COLOR_BG_SECONDARY).borderRadius(22)
+        .borderWidth(1).borderColor(COLOR_BORDER).padding({ left: SPACE_LG }).height(44)
         Button() { Text('→').fontSize(18).fontWeight(FontWeight.Bold).fontColor('#FFFFFF') }
         .width(40).height(40).borderRadius(20)
-        .backgroundColor(this.inputText.trim().length > 0 && !this.isStreaming
-          ? this.theme.accentBlue : this.theme.bgSecondary)
+        .backgroundColor(this.inputText.trim() && !this.isStreaming ? COLOR_ACCENT_BLUE : COLOR_BG_SECONDARY)
         .margin({ left: SPACE_SM })
         .enabled(this.inputText.trim().length > 0 && !this.isStreaming)
         .onClick(() => { this.sendMessage() })
       }
       .width('100%').padding({ left: SPACE_MD, right: SPACE_MD, top: SPACE_SM, bottom: SPACE_MD })
     }
-    .width('100%').height('100%').backgroundColor(this.theme.bgPrimary)
+    .width('100%').height('100%').backgroundColor(COLOR_BG_PRIMARY)
   }
 }
