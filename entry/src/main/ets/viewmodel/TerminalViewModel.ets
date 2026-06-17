@@ -37,6 +37,6 @@ export class TerminalViewModel {
   }
 
   getOutputText(): string {
-    return this.outputLines.map(l => l.data).join('')
+    return this.outputLines.map(l => (l.isStderr ? '[ERR] ' : '') + l.data).join('')
   }
 }

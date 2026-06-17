@@ -49,4 +49,12 @@ export class DiscoveredServer {
   port: number = 3000
   token: string = ''
   version: string = ''
+  type: string = ''
+}
+
+@Observed
+export class ConnectionHistory {
+  id: string = ''
+  url: string = ''
+  time: number = Date.now()
 }
