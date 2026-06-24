@@ -10,6 +10,7 @@ import { ChatPage } from './ChatPage';
 import { FilesPage } from './FilesPage';
 import { TerminalPage } from './TerminalPage';
 import { SettingsPage } from './SettingsPage';
+import { BuildPage } from './BuildPage';
 
 interface TabItem {
   index: number
@@ -21,7 +22,8 @@ const TABS: TabItem[] = [
   { index: 0, title: '对话', icon: '💬' },
   { index: 1, title: '文件', icon: '📁' },
   { index: 2, title: '终端', icon: '>_' },
-  { index: 3, title: '设置', icon: '⚙' },
+  { index: 3, title: '编译', icon: '🔨' },
+  { index: 4, title: '设置', icon: '⚙' },
 ]
 
 @Entry
@@ -58,6 +60,7 @@ struct Index {
         TabContent() { ChatPage() }
         TabContent() { FilesPage() }
         TabContent() { TerminalPage() }
+        TabContent() { BuildPage() }
         TabContent() { SettingsPage() }
       }
       .barHeight(0)
