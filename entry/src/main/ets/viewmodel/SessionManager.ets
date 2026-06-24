@@ -17,38 +17,44 @@ export class SessionManager {
   }
 
   async init(ctx: Context): Promise<void> {
-    this.prefs = await preferences.getPreferences(ctx, PREF_NAME)
-    let json = await this.prefs.get(KEY_SESSIONS, '') as string
-    if (json) {
-      try {
-        let raw = JSON.parse(json) as Array<Record<string, Object>>
-        this.sessions = raw.map((r: Record<string, Object>) => {
-          let s = new ChatSession()
-          s.id = r['id'] as string
-          s.title = r['title'] as string
-          s.createdAt = r['createdAt'] as number
-          s.updatedAt = r['updatedAt'] as number
-          let msgs = r['messages'] as Array<Record<string, Object>>
-          if (msgs) {
-            s.messages = msgs.map((m: Record<string, Object>) => {
-              let msg = new ChatMessage(m['id'] as string, m['role'] as string, m['content'] as string)
-              msg.timestamp = m['timestamp'] as number
-              msg.isStreaming = false
-              return msg
-            })
-          }
-          return s
-        })
-      } catch (e) {
-        console.error('[SessionManager] parse error:', e)
-        this.sessions = []
+    try {
+      this.prefs = await preferences.getPreferences(ctx, PREF_NAME)
+      let json: string = ''
+      try { json = await this.prefs.get(KEY_SESSIONS, '') as string } catch (_e) {}
+      if (json) {
+        try {
+          let raw = JSON.parse(json) as Array<Record<string, Object>>
+          this.sessions = raw.map((r: Record<string, Object>) => {
+            let s = new ChatSession()
+            s.id = r['id'] as string
+            s.title = r['title'] as string
+            s.createdAt = r['createdAt'] as number
+            s.updatedAt = r['updatedAt'] as number
+            let msgs = r['messages'] as Array<Record<string, Object>>
+            if (msgs) {
+              s.messages = msgs.map((m: Record<string, Object>) => {
+                let msg = new ChatMessage(m['id'] as string, m['role'] as string, m['content'] as string)
+                msg.timestamp = m['timestamp'] as number
+                msg.isStreaming = false
+                return msg
+              })
+            }
+            return s
+          })
+        } catch (e) {
+          console.error('[SessionManager] parse error:', e)
+          this.sessions = []
+        }
       }
-    }
-    let curId = await this.prefs.get(KEY_CURRENT, '') as string
-    if (curId && this.sessions.find(s => s.id === curId)) {
-      this.currentSessionId = curId
-    } else if (this.sessions.length > 0) {
-      this.currentSessionId = this.sessions[0].id
+      let curId: string = ''
+      try { curId = await this.prefs.get(KEY_CURRENT, '') as string } catch (_e) {}
+      if (curId && this.sessions.find(s => s.id === curId)) {
+        this.currentSessionId = curId
+      } else if (this.sessions.length > 0) {
+        this.currentSessionId = this.sessions[0].id
+      }
+    } catch (e) {
+      console.error('[SessionManager] init error:', e)
     }
   }
 
@@ -139,21 +145,49 @@ export class SessionManager {
     }
   }
 
+  private serializeSessions(): string {
+    let data: Record<string, Object>[] = []
+    for (let s of this.sessions) {
+      let msgs: Record<string, Object>[] = []
+      for (let m of s.messages) {
+        let msgObj: Record<string, Object> = {}
+        msgObj['id'] = m.id
+        msgObj['role'] = m.role
+        msgObj['content'] = m.content
+        msgObj['timestamp'] = m.timestamp
+        msgs.push(msgObj)
+      }
+      let sessObj: Record<string, Object> = {}
+      sessObj['id'] = s.id
+      sessObj['title'] = s.title
+      sessObj['createdAt'] = s.createdAt
+      sessObj['updatedAt'] = s.updatedAt
+      sessObj['messages'] = msgs
+      data.push(sessObj)
+    }
+    return JSON.stringify(data)
+  }
+
   private async save(): Promise<void> {
     if (!this.prefs) return
-    let data = JSON.stringify(this.sessions.map(s => ({
-      id: s.id, title: s.title, createdAt: s.createdAt, updatedAt: s.updatedAt,
-      messages: s.messages.map(m => ({ id: m.id, role: m.role, content: m.content, timestamp: m.timestamp }))
-    })))
-    await this.prefs.put(KEY_SESSIONS, data)
-    await this.prefs.put(KEY_CURRENT, this.currentSessionId)
-    await this.prefs.flush()
+    try {
+      let data = this.serializeSessions()
+      await this.prefs.put(KEY_SESSIONS, data)
+      await this.prefs.put(KEY_CURRENT, this.currentSessionId)
+      await this.prefs.flush()
+    } catch (e) {
+      console.error('[SessionManager] save error:', e)
+    }
   }
 
   private async saveCurrent(): Promise<void> {
     if (!this.prefs) return
-    await this.prefs.put(KEY_CURRENT, this.currentSessionId)
-    await this.prefs.flush()
+    try {
+      await this.prefs.put(KEY_CURRENT, this.currentSessionId)
+      await this.prefs.flush()
+    } catch (e) {
+      console.error('[SessionManager] saveCurrent error:', e)
+    }
   }
 
   /** Call save explicitly when messages change (debounced externally) */

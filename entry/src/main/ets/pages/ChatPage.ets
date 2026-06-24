@@ -93,11 +93,10 @@ export struct ChatPage {
   private onStatusFn: (s: ConnectionStatus) => void = () => {}
   private onMsgFn: (m: WsMessage) => void = () => {}
 
-  async aboutToAppear(): Promise<void> {
+  aboutToAppear(): void {
     let ctx = this.getUIContext().getHostContext()
     if (ctx) {
-      await this.chatVM.init(ctx)
-      this.refreshUI()
+      this.chatVM.init(ctx).then(() => { this.refreshUI() })
     }
     this.connectionStatus = this.socketManager.getStatus()
     this.onStatusFn = (s: ConnectionStatus) => { this.connectionStatus = s }
