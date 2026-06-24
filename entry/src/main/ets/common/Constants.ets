@@ -137,5 +137,5 @@ export const BREATH_DURATION = 2000 // ms per cycle
 
 // ── App Info ──
 export const APP_VERSION = '1.0.0'
-export const APP_NAME = 'CodeRemote'
+export const APP_NAME = 'VBconnect'
 

@@ -2,19 +2,19 @@
   "string": [
     {
       "name": "app_name",
-      "value": "CodeRemote"
+      "value": "VBconnect"
     },
     {
       "name": "module_desc",
-      "value": "Remote control opencode from HarmonyOS"
+      "value": "VBconnect - Cute AI coding companion for HarmonyOS"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "CodeRemote main ability"
+      "value": "VBconnect main ability"
     },
     {
       "name": "EntryAbility_label",
-      "value": "CodeRemote"
+      "value": "VBconnect"
     },
     {
       "name": "tab_chat",

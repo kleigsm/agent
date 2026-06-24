@@ -1,6 +1,52 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="24" fill="#1a1b26"/>
-  <rect x="24" y="28" width="36" height="72" rx="6" fill="#7aa2f7"/>
-  <rect x="68" y="28" width="36" height="72" rx="6" fill="#9ece6a"/>
-  <rect x="46" y="28" width="36" height="36" rx="6" fill="#bb9af7"/>
+  <!-- Background circle with gradient feel -->
+  <rect width="128" height="128" rx="28" fill="#FF6B35"/>
+
+  <!-- Inner lighter circle for depth -->
+  <circle cx="64" cy="58" r="46" fill="#FF8C5A"/>
+
+  <!-- Dog face - main shape (cute round) -->
+  <ellipse cx="64" cy="62" rx="32" ry="28" fill="#FFF5EE"/>
+
+  <!-- Left ear -->
+  <ellipse cx="34" cy="36" rx="14" ry="18" fill="#FF6B35" transform="rotate(-15 34 36)"/>
+  <ellipse cx="34" cy="38" rx="9" ry="13" fill="#FFB899" transform="rotate(-15 34 38)"/>
+
+  <!-- Right ear -->
+  <ellipse cx="94" cy="36" rx="14" ry="18" fill="#FF6B35" transform="rotate(15 94 36)"/>
+  <ellipse cx="94" cy="38" rx="9" ry="13" fill="#FFB899" transform="rotate(15 94 38)"/>
+
+  <!-- Left eye -->
+  <circle cx="52" cy="58" r="6" fill="#2D1B0E"/>
+  <circle cx="54" cy="56" r="2" fill="#FFFFFF"/>
+
+  <!-- Right eye -->
+  <circle cx="76" cy="58" r="6" fill="#2D1B0E"/>
+  <circle cx="78" cy="56" r="2" fill="#FFFFFF"/>
+
+  <!-- Nose -->
+  <ellipse cx="64" cy="70" rx="5" ry="3.5" fill="#2D1B0E"/>
+
+  <!-- Mouth (cute smile) -->
+  <path d="M56 75 Q64 83 72 75" stroke="#2D1B0E" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Blush left -->
+  <ellipse cx="42" cy="68" rx="6" ry="3.5" fill="#FFB6C1" opacity="0.7"/>
+
+  <!-- Blush right -->
+  <ellipse cx="86" cy="68" rx="6" ry="3.5" fill="#FFB6C1" opacity="0.7"/>
+
+  <!-- Headset -->
+  <path d="M26 50 Q30 44 42 46" stroke="#404040" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <rect x="22" y="46" width="10" height="14" rx="4" fill="#505050"/>
+  <path d="M102 50 Q98 44 86 46" stroke="#404040" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <rect x="96" y="46" width="10" height="14" rx="4" fill="#505050"/>
+
+  <!-- Headset band -->
+  <path d="M32 49 Q64 30 96 49" stroke="#404040" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Connection dots (WiFi-like) bottom area -->
+  <circle cx="64" cy="100" r="3" fill="#FFFFFF" opacity="0.9"/>
+  <path d="M52 95 Q64 87 76 95" stroke="#FFFFFF" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <path d="M44 90 Q64 78 84 90" stroke="#FFFFFF" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>
 </svg>
