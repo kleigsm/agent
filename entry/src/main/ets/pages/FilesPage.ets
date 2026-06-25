@@ -155,6 +155,17 @@ export struct FilesPage {
     return (bytes / 1048576).toFixed(1) + ' MB'
   }
 
+  @Builder
+  StatusBadge(filePath: string) {
+    if (this.filesVM.getGitStatus(filePath)) {
+      Text(this.filesVM.getGitStatus(filePath) === 'modified' ? 'M' : this.filesVM.getGitStatus(filePath) === 'added' ? 'A' : 'D')
+        .fontSize(9).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
+        .backgroundColor(this.filesVM.gitStatusColor(this.filesVM.getGitStatus(filePath))).borderRadius(3)
+        .padding({ left: 3, right: 3, top: 1, bottom: 1 })
+        .margin({ right: SPACE_SM })
+    }
+  }
+
   fileIcon(item: FileNode): string {
     if (item.type === 'directory') return '📁'
     const ext = item.name.split('.').pop()?.toLowerCase()
@@ -322,19 +333,10 @@ export struct FilesPage {
                   Text(this.formatSize(item.size))
                     .fontSize(10)
                     .fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
-                    .margin({ right: SPACE_SM })
+                    .margin({ right: SPACE_XS })
                 }
                 // Git status marker
-                if (item.type === 'file') {
-                  let gs = this.filesVM.getGitStatus(item.path)
-                  if (gs) {
-                    Text(gs === 'modified' ? 'M' : gs === 'added' ? 'A' : gs === 'deleted' ? 'D' : '??')
-                      .fontSize(9).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
-                      .backgroundColor(this.filesVM.gitStatusColor(gs)).borderRadius(3)
-                      .padding({ left: 3, right: 3, top: 1, bottom: 1 })
-                      .margin({ right: SPACE_SM })
-                  }
-                }
+                if (item.type === 'file') { this.StatusBadge(item.path) }
                 Image($r('sys.symbol.chevron_right'))
                   .width(14).height(14)
                   .fillColor(COLOR_TEXT_MUTED)
