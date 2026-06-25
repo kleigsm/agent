@@ -108,6 +108,7 @@ export struct ChatPage {
   @State showDrawer: boolean = false
   @State sessionTitle: string = '对话'
   @State sessionCount: number = 1
+  @State sessions: ChatSession[] = []
   @State renamingId: string = ''
   @State renameText: string = ''
   private socketManager: SocketManager = SocketManager.getInstance()
@@ -140,6 +141,7 @@ export struct ChatPage {
     this.messages = [...this.chatVM.messages]
     this.sessionTitle = this.chatVM.currentTitle
     this.sessionCount = this.chatVM.sessions.length
+    this.sessions = [...this.chatVM.sessions]
     this.showQuickCommands = this.messages.length === 0
   }
 
@@ -328,7 +330,7 @@ export struct ChatPage {
 
           // Session list
           List() {
-            ForEach(this.chatVM.sessions, (session: ChatSession) => {
+            ForEach(this.sessions, (session: ChatSession) => {
               ListItem() {
                 Column() {
                   // Rename bar
@@ -370,7 +372,7 @@ export struct ChatPage {
                       Circle({ width: 8, height: 8 }).fill(COLOR_ACCENT_BLUE).margin({ right: SPACE_SM })
                     }
 
-                    if (this.chatVM.sessions.length > 1) {
+                    if (this.sessions.length > 1) {
                       Text('🗑').fontSize(14)
                         .onClick(() => { this.onDeleteSession(session.id) })
                     }
