@@ -126,11 +126,10 @@ export struct ChatPage {
     this.onMsgFn = (m: WsMessage) => { this.handleMessage(m) }
     this.socketManager.onStatusChange(this.onStatusFn); this.socketManager.onMessage(this.onMsgFn)
     // Check for cross-tab pending message (e.g. build fix)
-    let pendingFn = AppStorage.get<Function>('pendingMessageFn')
-    if (pendingFn) {
-      let msg = pendingFn()
-      if (msg) this.sendMessage(msg)
-      AppStorage.set('pendingMessageFn', undefined)
+    let pendingMsg = AppStorage.get<string>('pendingMessage')
+    if (pendingMsg && pendingMsg.length > 0) {
+      this.sendMessage(pendingMsg)
+      AppStorage.set('pendingMessage', '')
     }
   }
   aboutToDisappear(): void { this.socketManager.offStatusChange(this.onStatusFn); this.socketManager.offMessage(this.onMsgFn) }

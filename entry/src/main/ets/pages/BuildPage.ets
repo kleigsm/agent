@@ -77,9 +77,8 @@ export struct BuildPage {
     // Limit to 10 error lines to avoid flooding context
     let snippet = errors.slice(0, 10).join('\n')
     let prompt = '编译失败了，以下是错误日志，请帮我修复代码问题：\n\n```\n' + snippet + '\n```\n\n项目路径是 ' + (this.currentCmd || '当前项目') + '，请分析错误原因并修复。'
-    AppStorage.set('pendingMessageFn', () => prompt)
-    let switcher = AppStorage.get<Function>('switchTab')
-    if (switcher) switcher(0)
+    AppStorage.set('pendingMessage', prompt)
+    AppStorage.set('switchToTab', 0)
   }
 
   build() {

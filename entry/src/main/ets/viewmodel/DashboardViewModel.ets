@@ -1,8 +1,8 @@
 import { SocketManager, ConnectionStatus } from '../common/SocketManager'
 import { WsMessage } from '../common/Models'
 
-export interface GitChange { text: string; type: string }
-export interface GitCommit { hash: string; msg: string }
+export class GitChange { text: string = ''; type: string = '' }
+export class GitCommit { hash: string = ''; msg: string = '' }
 
 export class DashboardViewModel {
   private socket: SocketManager = SocketManager.getInstance()
@@ -34,9 +34,17 @@ export class DashboardViewModel {
         let status = c.substring(0, 2).trim()
         let type = status.includes('M') ? 'modified' : status.includes('A') ? 'added' :
           status.includes('D') ? 'deleted' : status.includes('?') ? 'untracked' : 'modified'
-        return { text: c.substring(3) || c, type: type }
+        let gc = new GitChange(); gc.text = c.substring(3) || c; gc.type = type; return gc
       })
-      this.commits = msg.payload['commits'] as GitCommit[] || []
+      let rawCommits = msg.payload['commits'] as Array<Record<string, Object>> || []
+      let parsedCommits: GitCommit[] = []
+      for (let rc of rawCommits) {
+        let gc = new GitCommit()
+        gc.hash = rc['hash'] as string
+        gc.msg = rc['msg'] as string
+        parsedCommits.push(gc)
+      }
+      this.commits = parsedCommits
       if (this.onUpdate) this.onUpdate()
     }
   }

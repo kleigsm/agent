@@ -6,12 +6,16 @@ export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     console.info('EntryAbility onCreate')
     // Restore dark mode preference
-    let ctx = this.context.getApplicationContext()
-    preferences.getPreferences(ctx, 'coderemote_settings').then(p => {
-      p.get('dark_mode', false).then((v: preferences.ValueType) => {
-        AppStorage.setOrCreate('isDarkMode', v as boolean)
+    try {
+      let ctx = this.context.getApplicationContext()
+      preferences.getPreferences(ctx, 'coderemote_settings').then(p => {
+        p.get('dark_mode', false).then((v: preferences.ValueType) => {
+          AppStorage.setOrCreate('isDarkMode', v as boolean)
+        })
       })
-    })
+    } catch (e) {
+      console.error('EntryAbility onCreate error:', JSON.stringify(e))
+    }
   }
 
   onDestroy(): void {

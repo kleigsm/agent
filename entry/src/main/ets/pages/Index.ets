@@ -37,14 +37,18 @@ const TABS: TabItem[] = [
 @Component
 struct Index {
   @StorageLink('isDarkMode') isDark: boolean = false
+  @StorageLink('switchToTab') @Watch('onTabSwitch') targetTab: number = -1
   @State currentTabIndex: number = 0
 
   aboutToAppear(): void {
-    // Listen for cross-tab switch requests (e.g. build fix → chat)
-    let self = this
-    AppStorage.setOrCreate('switchTab', (idx: number) => {
-      self.currentTabIndex = idx
-    })
+    AppStorage.setOrCreate('switchToTab', -1)
+  }
+
+  onTabSwitch(): void {
+    if (this.targetTab >= 0) {
+      this.currentTabIndex = this.targetTab
+      AppStorage.set('switchToTab', -1)
+    }
   }
 
   @Builder
