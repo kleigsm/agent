@@ -345,9 +345,8 @@ export struct ChatPage {
                       Button('确认').fontSize(12).fontColor('#FFFFFF')
                         .backgroundColor(COLOR_ACCENT_BLUE).borderRadius(8).height(30).padding({ left: SPACE_SM, right: SPACE_SM })
                         .margin({ left: SPACE_SM }).onClick(() => { this.onConfirmRename() })
-                      Button('取消').fontSize(12).fontColor(dc(this.isDark, COLOR_TEXT_SECONDARY, C_TEXT_SECONDARY_DARK))
-                        .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK)).borderRadius(8).height(30).padding({ left: SPACE_SM, right: SPACE_SM })
-                        .borderWidth(1).borderColor(dc(this.isDark, COLOR_BORDER, C_BORDER_DARK))
+                      Button('取消').fontSize(12).fontColor(COLOR_ACCENT_BLUE)
+                        .backgroundColor(Color.Transparent).borderRadius(8).height(30).padding({ left: SPACE_SM, right: SPACE_SM })
                         .margin({ left: SPACE_XS }).onClick(() => { this.onCancelRename() })
                     }.width('100%').margin({ bottom: SPACE_XS })
                   }
