@@ -25,8 +25,8 @@ interface TabItem {
 }
 
 const TABS: TabItem[] = [
-  { index: 0, title: '总览', icon: '📊' },
-  { index: 1, title: '对话', icon: '💬' },
+  { index: 0, title: '对话', icon: '💬' },
+  { index: 1, title: '总览', icon: '📊' },
   { index: 2, title: '文件', icon: '📁' },
   { index: 3, title: '终端', icon: '>_' },
   { index: 4, title: '编译', icon: '🔨' },
@@ -76,8 +76,8 @@ struct Index {
   build() {
     Column() {
       Tabs({ index: this.currentTabIndex }) {
-        TabContent() { DashboardPage() }
         TabContent() { ChatPage() }
+        TabContent() { DashboardPage() }
         TabContent() { FilesPage() }
         TabContent() { TerminalPage() }
         TabContent() { BuildPage() }
