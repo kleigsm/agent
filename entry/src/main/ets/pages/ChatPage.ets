@@ -241,6 +241,15 @@ export struct ChatPage {
               .padding({ left: 6, right: 6, top: 1, bottom: 1 }).margin({ right: SPACE_SM })
           }
 
+          if (this.connectionStatus !== ConnectionStatus.CONNECTED) {
+            Text('重连').fontSize(12).fontColor('#FFFFFF')
+              .padding({ left: 12, right: 12, top: 4, bottom: 4 }).borderRadius(10)
+              .backgroundColor(COLOR_ACCENT_BLUE)
+              .onClick(() => {
+                this.socketManager.connect(this.socketManager.getServerUrl(), this.socketManager.getAuthToken())
+              }).margin({ right: SPACE_SM })
+          }
+
           Text('清空').fontSize(12).fontColor(dc(this.isDark, COLOR_TEXT_SECONDARY, C_TEXT_SECONDARY_DARK))
             .padding({ left: 12, right: 12, top: 4, bottom: 4 }).borderRadius(10)
             .backgroundColor(dc(this.isDark, COLOR_GLASS_BG, C_GLASS_BG_DARK))
