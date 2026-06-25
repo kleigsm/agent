@@ -43,6 +43,11 @@ export struct SettingsPage {
       this.settingsVM.init(hostCtx).then(() => {
         this.serverUrl = this.settingsVM.serverUrl
         this.authToken = this.settingsVM.authToken
+        // Auto-connect if settings are saved
+        if (this.serverUrl && this.socketManager.getStatus() === ConnectionStatus.DISCONNECTED) {
+          this.socketManager.setAuthToken(this.authToken)
+          this.socketManager.connect(this.serverUrl, this.authToken)
+        }
       })
     }
     this.connectionStatus = this.socketManager.getStatus()

@@ -9,8 +9,10 @@ import {
   SPACE_XS, SPACE_SM,
   RADIUS_MD,
   FONT_CAPTION, ANIM_DURATION_NORMAL,
-  dc
+  dc, DEFAULT_SERVER_URL
 } from '../common/Constants';
+import { preferences } from '@kit.ArkData';
+import { SocketManager, ConnectionStatus } from '../common/SocketManager';
 import { ChatPage } from './ChatPage';
 import { FilesPage } from './FilesPage';
 import { TerminalPage } from './TerminalPage';
@@ -46,6 +48,25 @@ struct Index {
   aboutToAppear(): void {
     AppStorage.setOrCreate('switchToTab', -1)
     AppStorage.setOrCreate('buildNotify', '')
+    // Auto-connect from saved settings
+    let ctx = this.getUIContext().getHostContext()
+    if (ctx) {
+      try {
+        preferences.getPreferences(ctx, 'coderemote_settings').then(p => {
+          p.get('server_url', DEFAULT_SERVER_URL).then((u: preferences.ValueType) => {
+            let url = u as string
+            p.get('auth_token', '').then((t: preferences.ValueType) => {
+              let token = t as string
+              let sm = SocketManager.getInstance()
+              if (sm.getStatus() === ConnectionStatus.DISCONNECTED) {
+                sm.setAuthToken(token)
+                sm.connect(url, token)
+              }
+            })
+          })
+        })
+      } catch (_e) {}
+    }
   }
 
   onTabSwitch(): void {
