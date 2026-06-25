@@ -342,10 +342,10 @@ export struct ChatPage {
                         .borderRadius(8).layoutWeight(1).height(34).padding({ left: SPACE_SM })
                         .onChange((v: string) => { this.renameText = v })
                         .onSubmit(() => { this.onConfirmRename() })
-                      Button('✓').fontSize(14).fontColor('#FFFFFF')
-                        .backgroundColor(COLOR_ACCENT_BLUE).borderRadius(8).height(30).width(36)
+                      Button('确认').fontSize(12).fontColor('#FFFFFF')
+                        .backgroundColor(COLOR_ACCENT_BLUE).borderRadius(8).height(30).padding({ left: SPACE_SM, right: SPACE_SM })
                         .margin({ left: SPACE_SM }).onClick(() => { this.onConfirmRename() })
-                      Button('✕').fontSize(14).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
+                      Button('取消').fontSize(12).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
                         .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK)).borderRadius(8).height(30).width(36)
                         .margin({ left: SPACE_XS }).onClick(() => { this.onCancelRename() })
                     }.width('100%').margin({ bottom: SPACE_XS })
@@ -364,7 +364,7 @@ export struct ChatPage {
                     }.layoutWeight(1).alignItems(HorizontalAlign.Start)
 
                     // Rename button
-                    Text('✏️').fontSize(14)
+                    Text('改名').fontSize(11).fontColor(COLOR_ACCENT_BLUE)
                       .onClick(() => { this.onStartRename(session.id, session.title) })
                       .margin({ right: SPACE_SM })
 
@@ -373,7 +373,7 @@ export struct ChatPage {
                     }
 
                     if (this.sessions.length > 1) {
-                      Text('🗑').fontSize(14)
+                      Text('删除').fontSize(11).fontColor('#FF3B30')
                         .onClick(() => { this.onDeleteSession(session.id) })
                     }
                   }
