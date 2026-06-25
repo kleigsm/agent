@@ -14,6 +14,7 @@ import {
 } from '../common/Constants';
 import { WsMessage, ChatMessage, ChatSession } from '../common/Models';
 import { pasteboard } from '@kit.BasicServicesKit';
+import { MarkdownRenderer } from '../common/MarkdownRenderer';
 
 @Component
 struct MessageBubble {
@@ -41,9 +42,21 @@ struct MessageBubble {
           .alignSelf(this.msg.role === 'user' ? ItemAlign.End : ItemAlign.Start)
 
           Column() {
-            Text(this.msg.content || (this.msg.isStreaming ? '思考中...' : '')).fontSize(14)
-              .fontColor(this.msg.role === 'user' ? COLOR_BUBBLE_USER_TEXT : COLOR_BUBBLE_AI_TEXT)
-              .padding({ left: 14, right: 14, top: 10, bottom: 10 }).textAlign(TextAlign.Start).lineHeight(20)
+            if (this.msg.role === 'assistant') {
+              if (this.msg.content) {
+                Column() {
+                  MarkdownRenderer({ content: this.msg.content })
+                }.padding({ left: 14, right: 14, top: 10, bottom: 10 }).width('100%')
+              } else {
+                Text(this.msg.isStreaming ? '思考中...' : '').fontSize(14)
+                  .fontColor(COLOR_BUBBLE_AI_TEXT)
+                  .padding({ left: 14, right: 14, top: 10, bottom: 10 })
+              }
+            } else {
+              Text(this.msg.content).fontSize(14)
+                .fontColor(COLOR_BUBBLE_USER_TEXT)
+                .padding({ left: 14, right: 14, top: 10, bottom: 10 }).textAlign(TextAlign.Start).lineHeight(20)
+            }
           }
           .borderRadius(this.msg.role === 'user' ?
             ({ topLeft: 18, topRight: 6, bottomLeft: 18, bottomRight: 18 }) :
