@@ -93,6 +93,10 @@ export class ChatViewModel {
     this.sessionMgr.deleteSession(id)
   }
 
+  renameSession(id: string, title: string): void {
+    this.sessionMgr.renameSession(id, title)
+  }
+
   async persistSessions(): Promise<void> {
     await this.sessionMgr.persist()
   }

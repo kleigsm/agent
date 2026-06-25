@@ -108,6 +108,8 @@ export struct ChatPage {
   @State showDrawer: boolean = false
   @State sessionTitle: string = '对话'
   @State sessionCount: number = 1
+  @State renamingId: string = ''
+  @State renameText: string = ''
   private socketManager: SocketManager = SocketManager.getInstance()
   private chatVM: ChatViewModel = new ChatViewModel()
   private sessionMgr: SessionManager = SessionManager.getInstance()
@@ -191,6 +193,22 @@ export struct ChatPage {
   onDeleteSession(id: string): void {
     this.chatVM.deleteSession(id)
     this.refreshUI()
+  }
+  onStartRename(id: string, currentTitle: string): void {
+    this.renamingId = id
+    this.renameText = currentTitle
+  }
+  onConfirmRename(): void {
+    if (this.renameText.trim()) {
+      this.chatVM.renameSession(this.renamingId, this.renameText)
+      this.refreshUI()
+    }
+    this.renamingId = ''
+    this.renameText = ''
+  }
+  onCancelRename(): void {
+    this.renamingId = ''
+    this.renameText = ''
   }
   formatSessionTime(ts: number): string {
     let d = new Date(ts)
@@ -312,31 +330,59 @@ export struct ChatPage {
           List() {
             ForEach(this.chatVM.sessions, (session: ChatSession) => {
               ListItem() {
-                Row() {
-                  Column() {
-                    Text(session.title).fontSize(14)
-                      .fontColor(session.id === this.chatVM.currentSessionId ? COLOR_ACCENT_BLUE : dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
-                      .fontWeight(session.id === this.chatVM.currentSessionId ? FontWeight.Bold : FontWeight.Normal)
-                      .maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis }).width('100%')
+                Column() {
+                  // Rename bar
+                  if (this.renamingId === session.id) {
                     Row() {
-                      Text(this.formatSessionTime(session.updatedAt)).fontSize(11).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
-                      Text(' · ' + session.messages.length + '条消息').fontSize(11).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
-                    }.margin({ top: 2 })
-                  }.layoutWeight(1).alignItems(HorizontalAlign.Start)
-
-                  if (session.id === this.chatVM.currentSessionId) {
-                    Circle({ width: 8, height: 8 }).fill(COLOR_ACCENT_BLUE).margin({ right: SPACE_MD })
+                      TextInput({ text: this.renameText })
+                        .fontSize(13).fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
+                        .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK))
+                        .borderRadius(8).layoutWeight(1).height(34).padding({ left: SPACE_SM })
+                        .onChange((v: string) => { this.renameText = v })
+                        .onSubmit(() => { this.onConfirmRename() })
+                      Button('✓').fontSize(14).fontColor('#FFFFFF')
+                        .backgroundColor(COLOR_ACCENT_BLUE).borderRadius(8).height(30).width(36)
+                        .margin({ left: SPACE_SM }).onClick(() => { this.onConfirmRename() })
+                      Button('✕').fontSize(14).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
+                        .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK)).borderRadius(8).height(30).width(36)
+                        .margin({ left: SPACE_XS }).onClick(() => { this.onCancelRename() })
+                    }.width('100%').margin({ bottom: SPACE_XS })
                   }
 
-                  if (this.chatVM.sessions.length > 1) {
-                    Text('🗑').fontSize(16).opacity(0.5)
-                      .onClick(() => { this.onDeleteSession(session.id) })
+                  Row() {
+                    Column() {
+                      Text(session.title).fontSize(14)
+                        .fontColor(session.id === this.chatVM.currentSessionId ? COLOR_ACCENT_BLUE : dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
+                        .fontWeight(session.id === this.chatVM.currentSessionId ? FontWeight.Bold : FontWeight.Normal)
+                        .maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis }).width('100%')
+                      Row() {
+                        Text(this.formatSessionTime(session.updatedAt)).fontSize(11).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
+                        Text(' · ' + session.messages.length + '条消息').fontSize(11).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
+                      }.margin({ top: 2 })
+                    }.layoutWeight(1).alignItems(HorizontalAlign.Start)
+
+                    // Rename button
+                    Text('✏️').fontSize(14)
+                      .onClick(() => { this.onStartRename(session.id, session.title) })
+                      .margin({ right: SPACE_SM })
+
+                    if (session.id === this.chatVM.currentSessionId) {
+                      Circle({ width: 8, height: 8 }).fill(COLOR_ACCENT_BLUE).margin({ right: SPACE_SM })
+                    }
+
+                    if (this.chatVM.sessions.length > 1) {
+                      Text('🗑').fontSize(14)
+                        .onClick(() => { this.onDeleteSession(session.id) })
+                    }
                   }
+                  .width('100%')
                 }
                 .width('100%').padding({ left: SPACE_LG, right: SPACE_LG, top: SPACE_MD, bottom: SPACE_MD })
                 .backgroundColor(session.id === this.chatVM.currentSessionId ? COLOR_ACCENT_BLUE + '0C' : Color.Transparent)
                 .borderRadius(12).margin({ left: SPACE_SM, right: SPACE_SM, bottom: 2 })
-                .onClick(() => { this.onSwitchSession(session.id) })
+                .onClick(() => {
+                  if (this.renamingId !== session.id) this.onSwitchSession(session.id)
+                })
               }
             }, (session: ChatSession) => session.id)
           }.layoutWeight(1).width('100%')

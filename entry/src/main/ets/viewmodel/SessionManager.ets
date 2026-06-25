@@ -114,6 +114,15 @@ export class SessionManager {
     }
   }
 
+  renameSession(id: string, newTitle: string): void {
+    let s = this.sessions.find(s => s.id === id)
+    if (s && newTitle.trim()) {
+      s.title = newTitle.trim()
+      s.updatedAt = Date.now()
+      this.save()
+    }
+  }
+
   addMessage(msg: ChatMessage): void {
     let s = this.getCurrentSession()
     if (s) {
