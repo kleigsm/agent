@@ -1,5 +1,5 @@
 // ── Server defaults ──
-export const DEFAULT_SERVER_URL = 'ws://192.168.1.100:3000'
+export const DEFAULT_SERVER_URL = 'ws://127.0.0.1:3000'
 export const RECONNECT_DELAY_MS = 3000
 export const MAX_RECONNECT_ATTEMPTS = 10
 export const PING_INTERVAL_MS = 30000
