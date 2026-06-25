@@ -7,6 +7,9 @@ export class FilesViewModel {
   viewingFile: string = ''
   isLoading: boolean = false
   parentPath: string = '/'
+  diffContent: string = ''
+  isEditing: boolean = false
+  editContent: string = ''
 
   setEntries(path: string, files: FileNode[]): void {
     this.currentPath = path
@@ -17,10 +20,32 @@ export class FilesViewModel {
   setFileContent(path: string, content: string): void {
     this.viewingFile = path
     this.fileContent = content
+    this.isEditing = false
+    this.editContent = ''
+    this.diffContent = ''
   }
 
   clearFileView(): void {
     this.viewingFile = ''
     this.fileContent = ''
+    this.diffContent = ''
+    this.isEditing = false
+    this.editContent = ''
+  }
+
+  setDiffContent(path: string, diff: string): void {
+    if (path === this.viewingFile) {
+      this.diffContent = diff
+    }
+  }
+
+  enterEditMode(): void {
+    this.editContent = this.fileContent
+    this.isEditing = true
+  }
+
+  cancelEdit(): void {
+    this.isEditing = false
+    this.editContent = ''
   }
 }

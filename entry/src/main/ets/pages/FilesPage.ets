@@ -27,6 +27,7 @@ export struct FilesPage {
   @State isLoading: boolean = false
   @State parentPath: string = '/'
   @State breadcrumbs: string[] = ['/']
+  @State diffContent: string = ''
   private socketManager: SocketManager = SocketManager.getInstance()
   private filesVM: FilesViewModel = new FilesViewModel()
   private onMsgFn: (msg: WsMessage) => void = () => {}
@@ -54,6 +55,18 @@ export struct FilesPage {
       } else if (typeof data === 'string' && msg.payload['operation'] === 'read') {
         this.filesVM.setFileContent(path, data)
         this.refreshState()
+        // Also request diff for this file
+        let p2 = this.makePayload()
+        p2['path'] = path
+        this.socketManager.send('files:diff', p2)
+      }
+    } else if (msg.type === 'files:diff') {
+      const success = msg.payload['success'] as boolean
+      if (success) {
+        const diff = msg.payload['diff'] as string
+        if (diff) {
+          this.diffContent = diff
+        }
       }
     }
   }
@@ -75,6 +88,7 @@ export struct FilesPage {
     this.parentPath = this.filesVM.parentPath
     this.viewingFile = this.filesVM.viewingFile
     this.fileContent = this.filesVM.fileContent
+    this.diffContent = this.filesVM.diffContent
     this.isLoading = false
   }
 
@@ -102,6 +116,17 @@ export struct FilesPage {
     if (this.currentPath !== '/') {
       this.loadDirectory(this.parentPath)
     }
+  }
+
+  saveEdit(): void {
+    if (!this.viewingFile || !this.filesVM.isEditing) return
+    let payload = this.makePayload()
+    payload['path'] = this.viewingFile
+    payload['content'] = this.filesVM.editContent
+    this.socketManager.send('files:write', payload)
+    this.filesVM.cancelEdit()
+    // Reload file to reflect changes
+    this.loadFile(this.viewingFile)
   }
 
   formatSize(bytes: number): string {
@@ -173,41 +198,84 @@ export struct FilesPage {
       if (this.viewingFile) {
         Row() {
           Text('📄 ' + this.viewingFile.split('/').pop())
-            .fontSize(13)
-            .fontColor(COLOR_ACCENT_BLUE)
-            .fontFamily('monospace')
-            .layoutWeight(1)
-            .maxLines(1)
+            .fontSize(13).fontColor(COLOR_ACCENT_BLUE).fontFamily('monospace')
+            .layoutWeight(1).maxLines(1)
+
+          if (!this.filesVM.isEditing) {
+            // Only allow editing for files < 50KB
+            if (this.fileContent.length < 51200) {
+              Button('编辑').fontSize(11).fontColor(COLOR_ACCENT_BLUE)
+                .backgroundColor(COLOR_ACCENT_BLUE + '12').borderRadius(10).height(26)
+                .onClick(() => { this.filesVM.enterEditMode(); this.refreshState() })
+                .margin({ right: SPACE_SM })
+            }
+          } else {
+            Button('保存').fontSize(11).fontColor('#FFFFFF')
+              .backgroundColor(COLOR_ACCENT_BLUE).borderRadius(10).height(26)
+              .onClick(() => { this.saveEdit() })
+              .margin({ right: SPACE_XS })
+            Button('取消').fontSize(11).fontColor(dc(this.isDark, COLOR_TEXT_SECONDARY, C_TEXT_SECONDARY_DARK))
+              .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK)).borderRadius(10).height(26)
+              .onClick(() => { this.filesVM.cancelEdit(); this.refreshState() })
+              .margin({ right: SPACE_SM })
+          }
 
           Button({ type: ButtonType.Circle }) {
-            Text('✕').fontSize(12).fontColor(COLOR_TEXT_SECONDARY)
+            Text('✕').fontSize(12).fontColor(dc(this.isDark, COLOR_TEXT_SECONDARY, C_TEXT_SECONDARY_DARK))
           }
-          .width(28).height(28)
-          .backgroundColor(Color.Transparent)
-          .onClick(() => {
-            this.filesVM.clearFileView()
-            this.viewingFile = ''
-            this.fileContent = ''
-          })
+          .width(28).height(28).backgroundColor(Color.Transparent)
+          .onClick(() => { this.filesVM.clearFileView(); this.refreshState() })
         }
         .width('100%')
         .padding({ left: SPACE_LG, right: SPACE_XS, top: SPACE_XS, bottom: SPACE_XS })
 
-        Scroll() {
-          Text(this.fileContent || '空文件')
-            .fontSize(12)
-            .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
-            .fontFamily('monospace')
-            .padding(SPACE_MD)
-            .width('100%')
-            .textAlign(TextAlign.Start)
-            .lineHeight(18)
+        if (this.filesVM.isEditing) {
+          Scroll() {
+            TextArea({ text: this.filesVM.editContent })
+              .fontSize(12).fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
+              .fontFamily('monospace').padding(SPACE_MD).width('100%').height('100%')
+              .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK))
+              .onChange((v: string) => { this.filesVM.editContent = v })
+          }
+          .layoutWeight(1).width('100%')
+          .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK))
+          .borderRadius(RADIUS_MD)
+          .margin({ left: SPACE_SM, right: SPACE_SM, bottom: SPACE_SM })
+        } else if (this.diffContent) {
+          // Diff view
+          Scroll() {
+            Column() {
+              Text('--- 变更内容 (git diff) ---').fontSize(11)
+                .fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
+                .fontFamily('monospace').padding({ left: SPACE_MD, top: SPACE_MD }).width('100%')
+              ForEach(this.diffContent.split('\n'), (line: string, idx: number) => {
+                Row() {
+                  Text(line).fontSize(11).fontFamily('monospace').lineHeight(16)
+                    .fontColor(line[0] === '+' ? '#34C759' : line[0] === '-' ? '#FF3B30' :
+                      line[0] === '@' ? COLOR_ACCENT_BLUE : dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
+                    .backgroundColor(line[0] === '+' ? '#34C75915' : line[0] === '-' ? '#FF3B3015' : Color.Transparent)
+                    .width('100%').padding({ left: SPACE_MD, right: SPACE_MD, top: 1, bottom: 1 })
+                }.width('100%')
+              }, (line: string, idx: number) => idx.toString())
+            }.width('100%')
+          }
+          .layoutWeight(1).width('100%')
+          .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK))
+          .borderRadius(RADIUS_MD)
+          .margin({ left: SPACE_SM, right: SPACE_SM, bottom: SPACE_SM })
+        } else {
+          Scroll() {
+            Text(this.fileContent || '空文件')
+              .fontSize(12)
+              .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
+              .fontFamily('monospace').padding(SPACE_MD).width('100%')
+              .textAlign(TextAlign.Start).lineHeight(18)
+          }
+          .layoutWeight(1).width('100%')
+          .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK))
+          .borderRadius(RADIUS_MD)
+          .margin({ left: SPACE_SM, right: SPACE_SM, bottom: SPACE_SM })
         }
-        .layoutWeight(1)
-        .width('100%')
-        .backgroundColor(COLOR_BG_INPUT)
-        .borderRadius(RADIUS_MD)
-        .margin({ left: SPACE_SM, right: SPACE_SM, bottom: SPACE_SM })
       } else {
         if (this.isLoading && this.entries.length === 0) {
           Column() {
