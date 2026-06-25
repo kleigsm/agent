@@ -32,11 +32,16 @@ export struct BuildPage {
   aboutToAppear(): void {
     this.connected = SocketManager.getInstance().getStatus() === ConnectionStatus.CONNECTED
     this.buildVM.init(() => {
+      let prev = this.status
       this.status = this.buildVM.status
       this.progress = this.buildVM.progress
       this.logLines = [...this.buildVM.logLines]
       this.statusLabel = this.buildVM.statusLabel()
       this.currentCmd = this.buildVM.currentCommand
+      // Notify on build completion
+      if (prev === BuildStatus.BUILDING && (this.status === BuildStatus.SUCCESS || this.status === BuildStatus.FAILED)) {
+        AppStorage.set('buildNotify', this.status === BuildStatus.SUCCESS ? 'success' : 'failed')
+      }
     })
     this.buildVM.setScroller(this.scroller)
   }

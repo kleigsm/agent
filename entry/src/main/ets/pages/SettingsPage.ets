@@ -27,6 +27,7 @@ export struct SettingsPage {
   @State authToken: string = ''
   @State connectionStatus: ConnectionStatus = ConnectionStatus.DISCONNECTED
   @State statusText: string = '未连接'
+  @State pingMs: number = 0
   @State isScanning: boolean = false
   @State discoveredServers: DiscoveredServer[] = []
   @State errorMessage: string = ''
@@ -46,6 +47,7 @@ export struct SettingsPage {
     }
     this.connectionStatus = this.socketManager.getStatus()
     this.authToken = this.socketManager.getAuthToken()
+    this.pingMs = this.socketManager.getPingMs()
     this.onStatusFn = (status: ConnectionStatus) => {
       this.connectionStatus = status
       this.updateStatusText()
@@ -54,6 +56,9 @@ export struct SettingsPage {
     this.socketManager.onStatusChange(this.onStatusFn)
     this.socketManager.onError(this.onErrorFn)
     this.updateStatusText()
+    // Refresh ping every 5s
+    let self = this
+    setInterval(() => { self.pingMs = self.socketManager.getPingMs() }, 5000)
   }
 
   aboutToDisappear(): void {
@@ -155,6 +160,13 @@ export struct SettingsPage {
             .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
             .fontWeight(FontWeight.Medium)
             .margin({ left: SPACE_SM })
+
+          if (this.connectionStatus === ConnectionStatus.CONNECTED && this.pingMs > 0) {
+            Text(this.pingMs + 'ms').fontSize(12)
+              .fontColor(this.pingMs < 50 ? COLOR_ACCENT_GREEN : this.pingMs < 150 ? COLOR_ACCENT_ORANGE : COLOR_ACCENT_RED)
+              .margin({ left: SPACE_SM })
+              .fontFamily('monospace')
+          }
 
           Blank()
 

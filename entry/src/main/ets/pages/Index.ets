@@ -38,16 +38,34 @@ const TABS: TabItem[] = [
 struct Index {
   @StorageLink('isDarkMode') isDark: boolean = false
   @StorageLink('switchToTab') @Watch('onTabSwitch') targetTab: number = -1
+  @StorageLink('buildNotify') @Watch('onBuildNotify') buildNotify: string = ''
   @State currentTabIndex: number = 0
+  @State showBuildBanner: boolean = false
+  @State buildBannerText: string = ''
 
   aboutToAppear(): void {
     AppStorage.setOrCreate('switchToTab', -1)
+    AppStorage.setOrCreate('buildNotify', '')
   }
 
   onTabSwitch(): void {
     if (this.targetTab >= 0) {
       this.currentTabIndex = this.targetTab
       AppStorage.set('switchToTab', -1)
+    }
+  }
+
+  onBuildNotify(): void {
+    if (this.buildNotify === 'success') {
+      this.buildBannerText = '编译成功'
+      this.showBuildBanner = true
+    } else if (this.buildNotify === 'failed') {
+      this.buildBannerText = '编译失败'
+      this.showBuildBanner = true
+    }
+    if (this.buildNotify) {
+      AppStorage.set('buildNotify', '')
+      setTimeout(() => { this.showBuildBanner = false }, 3000)
     }
   }
 
@@ -75,6 +93,16 @@ struct Index {
 
   build() {
     Column() {
+      // Build notification banner
+      if (this.showBuildBanner) {
+        Row() {
+          Text(this.buildBannerText === '编译成功' ? '✅' : '❌').fontSize(14)
+          Text(' ' + this.buildBannerText).fontSize(13).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
+        }
+        .width('100%').height(36).justifyContent(FlexAlign.Center)
+        .backgroundColor(this.buildBannerText === '编译成功' ? '#34C759' : '#FF3B30')
+      }
+
       Tabs({ index: this.currentTabIndex }) {
         TabContent() { ChatPage() }
         TabContent() { DashboardPage() }

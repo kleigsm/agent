@@ -36,6 +36,9 @@ export struct FilesPage {
     this.onMsgFn = (msg: WsMessage) => { this.handleMessage(msg) }
     this.socketManager.onMessage(this.onMsgFn)
     this.loadDirectory('/')
+    // Request git status for file markers
+    let sp = this.makePayload()
+    this.socketManager.send('project:status', sp)
   }
 
   aboutToDisappear(): void {
@@ -59,6 +62,23 @@ export struct FilesPage {
         let p2 = this.makePayload()
         p2['path'] = path
         this.socketManager.send('files:diff', p2)
+      }
+    } else if (msg.type === 'project:status') {
+      const success = msg.payload['success'] as boolean
+      if (success) {
+        let changes = msg.payload['changes'] as string[]
+        if (changes) {
+          let map: Record<string, string> = {}
+          for (let c of changes) {
+            let status = c.substring(0, 2).trim()
+            let path = c.substring(3).trim()
+            if (!path) continue
+            let type = status.includes('M') ? 'modified' : status.includes('A') ? 'added' :
+              status.includes('D') ? 'deleted' : status.includes('?') ? 'untracked' : 'modified'
+            map[path] = type
+          }
+          this.filesVM.setGitStatus(map)
+        }
       }
     } else if (msg.type === 'files:diff') {
       const success = msg.payload['success'] as boolean
@@ -303,6 +323,17 @@ export struct FilesPage {
                     .fontSize(10)
                     .fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
                     .margin({ right: SPACE_SM })
+                }
+                // Git status marker
+                if (item.type === 'file') {
+                  let gs = this.filesVM.getGitStatus(item.path)
+                  if (gs) {
+                    Text(gs === 'modified' ? 'M' : gs === 'added' ? 'A' : gs === 'deleted' ? 'D' : '??')
+                      .fontSize(9).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
+                      .backgroundColor(this.filesVM.gitStatusColor(gs)).borderRadius(3)
+                      .padding({ left: 3, right: 3, top: 1, bottom: 1 })
+                      .margin({ right: SPACE_SM })
+                  }
                 }
                 Image($r('sys.symbol.chevron_right'))
                   .width(14).height(14)

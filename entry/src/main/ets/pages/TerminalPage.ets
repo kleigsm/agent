@@ -57,6 +57,7 @@ export struct TerminalPage {
     const cmd = this.commandInput.trim()
     if (!cmd || this.isRunning) return
     this.termVM.addToHistory(cmd)
+    this.termVM.currentCommand = ''
     this.termVM.addOutput('$ ' + cmd + '\n')
     this.isRunning = true
     this.outputText = this.termVM.getOutputText()
@@ -125,6 +126,20 @@ export struct TerminalPage {
 
       // ── 输入区 ──
       Row() {
+        Column() {
+          Text('↑').fontSize(10).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
+            .onClick(() => {
+              let cmd = this.termVM.navigateHistory(-1)
+              if (cmd) { this.commandInput = cmd; this.termVM.currentCommand = cmd }
+            })
+          Text('↓').fontSize(10).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
+            .onClick(() => {
+              let cmd = this.termVM.navigateHistory(1)
+              this.commandInput = cmd
+              if (cmd) this.termVM.currentCommand = cmd
+            })
+        }.margin({ right: SPACE_XS })
+
         Text('$')
           .fontSize(16)
           .fontColor(COLOR_ACCENT_GREEN)

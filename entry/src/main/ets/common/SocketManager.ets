@@ -33,6 +33,8 @@ export class SocketManager {
   private pendingMessages: string[] = []
   private pingTimer: number | null = null
   private lastPongTime: number = 0
+  private pingRtt: number = 0
+  private pingSendTime: number = 0
 
   static getInstance(): SocketManager {
     if (!SocketManager.instance) {
@@ -43,6 +45,10 @@ export class SocketManager {
 
   getStatus(): ConnectionStatus {
     return this.status
+  }
+
+  getPingMs(): number {
+    return this.pingRtt
   }
 
   setServerUrl(url: string): void {
@@ -165,6 +171,9 @@ export class SocketManager {
             const msg: WsMessage = JSON.parse(msgStr) as WsMessage
             if (msg.type === 'pong') {
               this.lastPongTime = Date.now()
+              if (this.pingSendTime > 0) {
+                this.pingRtt = Date.now() - this.pingSendTime
+              }
               return
             }
             this.notifyMessage(msg)
@@ -222,6 +231,7 @@ export class SocketManager {
     this.lastPongTime = Date.now()
     this.pingTimer = setInterval(() => {
       if (this.ws && this.status === ConnectionStatus.CONNECTED) {
+        this.pingSendTime = Date.now()
         let pingMsg = new WsMessage()
             pingMsg.type = 'ping'
             pingMsg.payload = {}
