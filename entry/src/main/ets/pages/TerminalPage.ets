@@ -2,18 +2,24 @@ import { SocketManager } from '../common/SocketManager';
 import { TerminalViewModel } from '../viewmodel/TerminalViewModel';
 import {
   EVENT_TERM_EXEC, EVENT_TERM_OUTPUT, EVENT_TERM_EXIT,
-  COLOR_BG_PRIMARY, COLOR_BG_SECONDARY, COLOR_BG_INPUT,
-  COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED,
+  COLOR_BG_PRIMARY, C_BG_PRIMARY_DARK,
+  COLOR_BG_SECONDARY, C_BG_SECONDARY_DARK,
+  COLOR_BG_INPUT, C_BG_INPUT_DARK,
+  COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK,
+  COLOR_TEXT_SECONDARY, C_TEXT_SECONDARY_DARK,
+  COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK,
   COLOR_ACCENT_BLUE, COLOR_ACCENT_GREEN, COLOR_ACCENT_RED,
-  COLOR_ACCENT_ORANGE, COLOR_BORDER,
+  COLOR_ACCENT_ORANGE, COLOR_BORDER, C_BORDER_DARK,
   SPACE_XS, SPACE_SM, SPACE_MD, SPACE_LG, SPACE_XL,
   RADIUS_SM, RADIUS_MD, RADIUS_LG, RADIUS_FULL,
-  FONT_CAPTION, FONT_BODY_SM, FONT_BODY, FONT_BODY_LG
+  FONT_CAPTION, FONT_BODY_SM, FONT_BODY, FONT_BODY_LG,
+  dc
 } from '../common/Constants';
 import { WsMessage } from '../common/Models';
 
 @Component
 export struct TerminalPage {
+  @StorageLink('isDarkMode') isDark: boolean = false
   @State outputText: string = ''
   @State commandInput: string = ''
   @State isRunning: boolean = false
@@ -81,7 +87,7 @@ export struct TerminalPage {
         Blank()
         Text('终端')
           .fontSize(12)
-          .fontColor(COLOR_TEXT_MUTED)
+          .fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
           .fontFamily('monospace')
         Blank()
         Row() {
@@ -90,8 +96,8 @@ export struct TerminalPage {
           }
           Button('清屏')
             .fontSize(11)
-            .fontColor(COLOR_TEXT_SECONDARY)
-            .backgroundColor(COLOR_BG_SECONDARY)
+            .fontColor(dc(this.isDark, COLOR_TEXT_SECONDARY, C_TEXT_SECONDARY_DARK))
+            .backgroundColor(dc(this.isDark, COLOR_BG_SECONDARY, C_BG_SECONDARY_DARK))
             .height(26)
             .borderRadius(RADIUS_SM)
             .onClick(() => { this.termVM.clearOutput(); this.outputText = '' })
@@ -100,7 +106,7 @@ export struct TerminalPage {
       .width('100%')
       .padding({ left: SPACE_MD, right: SPACE_MD, top: SPACE_SM, bottom: SPACE_SM })
 
-      // ── 输出区 ──
+      // ── 输出区 (always dark to mimic terminal) ──
       Scroll(this.outputScroller) {
         Text(this.outputText || '就绪。输入命令在远程 PC 上执行。\n')
           .fontSize(13)
@@ -127,8 +133,8 @@ export struct TerminalPage {
           .margin({ right: SPACE_SM })
 
         TextInput({ placeholder: '输入命令...', text: this.commandInput })
-          .placeholderColor(COLOR_TEXT_MUTED)
-          .fontColor(COLOR_TEXT_PRIMARY)
+          .placeholderColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
+          .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
           .fontFamily('monospace')
           .backgroundColor(Color.Transparent)
           .layoutWeight(1)
@@ -140,7 +146,7 @@ export struct TerminalPage {
           .fontSize(12)
           .fontColor('#FFFFFF')
           .backgroundColor(this.commandInput.trim().length > 0 && !this.isRunning ?
-            COLOR_ACCENT_BLUE : COLOR_BG_SECONDARY)
+            COLOR_ACCENT_BLUE : dc(this.isDark, COLOR_BG_SECONDARY, C_BG_SECONDARY_DARK))
           .borderRadius(RADIUS_MD)
           .height(32)
           .padding({ left: SPACE_LG, right: SPACE_LG })
@@ -153,6 +159,6 @@ export struct TerminalPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLOR_BG_PRIMARY)
+    .backgroundColor(dc(this.isDark, COLOR_BG_PRIMARY, C_BG_PRIMARY_DARK))
   }
 }

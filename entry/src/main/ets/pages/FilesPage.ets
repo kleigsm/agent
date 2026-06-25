@@ -2,17 +2,24 @@ import { SocketManager } from '../common/SocketManager';
 import { FilesViewModel } from '../viewmodel/FilesViewModel';
 import {
   EVENT_FILES_LIST, EVENT_FILES_READ, EVENT_FILES_RESULT,
-  COLOR_BG_PRIMARY, COLOR_BG_SECONDARY, COLOR_BG_INPUT,
-  COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED,
-  COLOR_ACCENT_BLUE, COLOR_ACCENT_ORANGE, COLOR_BORDER, COLOR_GLASS_BG,
+  COLOR_BG_PRIMARY, C_BG_PRIMARY_DARK,
+  COLOR_BG_SECONDARY, C_BG_SECONDARY_DARK,
+  COLOR_BG_INPUT, C_BG_INPUT_DARK,
+  COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK,
+  COLOR_TEXT_SECONDARY, C_TEXT_SECONDARY_DARK,
+  COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK,
+  COLOR_ACCENT_BLUE, COLOR_ACCENT_ORANGE, COLOR_BORDER, C_BORDER_DARK,
+  COLOR_GLASS_BG, C_GLASS_BG_DARK,
   SPACE_XS, SPACE_SM, SPACE_MD, SPACE_LG, SPACE_XL,
   RADIUS_SM, RADIUS_MD, RADIUS_LG, RADIUS_FULL,
-  FONT_CAPTION, FONT_BODY_SM, FONT_BODY
+  FONT_CAPTION, FONT_BODY_SM, FONT_BODY,
+  dc
 } from '../common/Constants';
 import { WsMessage, FileNode } from '../common/Models';
 
 @Component
 export struct FilesPage {
+  @StorageLink('isDarkMode') isDark: boolean = false
   @State currentPath: string = '/'
   @State entries: FileNode[] = []
   @State viewingFile: string = ''
@@ -122,7 +129,7 @@ export struct FilesPage {
       // ── 导航栏 ──
       Row() {
         Button({ type: ButtonType.Circle }) {
-          Text('↑').fontSize(16).fontColor(COLOR_TEXT_PRIMARY)
+          Text('↑').fontSize(16).fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
         }
         .width(34).height(34)
         .backgroundColor(COLOR_GLASS_BG)
@@ -134,7 +141,7 @@ export struct FilesPage {
             ForEach(this.breadcrumbs, (crumb: string, index: number) => {
               Row() {
                 if (index > 0) {
-                  Text('/').fontSize(12).fontColor(COLOR_TEXT_MUTED).margin({ left: 4, right: 4 })
+                  Text('/').fontSize(12).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK)).margin({ left: 4, right: 4 })
                 }
                 Text(index === 0 ? '/' : crumb.split('/').pop() || '')
                   .fontSize(12)
@@ -189,7 +196,7 @@ export struct FilesPage {
         Scroll() {
           Text(this.fileContent || '空文件')
             .fontSize(12)
-            .fontColor(COLOR_TEXT_PRIMARY)
+            .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
             .fontFamily('monospace')
             .padding(SPACE_MD)
             .width('100%')
@@ -205,7 +212,7 @@ export struct FilesPage {
         if (this.isLoading && this.entries.length === 0) {
           Column() {
             LoadingProgress().width(28).height(28).color(COLOR_ACCENT_BLUE)
-            Text('加载中...').fontSize(12).fontColor(COLOR_TEXT_MUTED).margin({ top: SPACE_SM })
+            Text('加载中...').fontSize(12).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK)).margin({ top: SPACE_SM })
           }
           .width('100%')
           .layoutWeight(1)
@@ -219,14 +226,14 @@ export struct FilesPage {
                 Text(this.fileIcon(item)).fontSize(20)
                 Text(item.name)
                   .fontSize(14)
-                  .fontColor(COLOR_TEXT_PRIMARY)
+                  .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
                   .maxLines(1)
                   .layoutWeight(1)
                   .margin({ left: SPACE_MD })
                 if (item.type === 'file') {
                   Text(this.formatSize(item.size))
                     .fontSize(10)
-                    .fontColor(COLOR_TEXT_MUTED)
+                    .fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
                     .margin({ right: SPACE_SM })
                 }
                 Image($r('sys.symbol.chevron_right'))
@@ -248,7 +255,7 @@ export struct FilesPage {
             ListItem() {
               Text('空目录')
                 .fontSize(14)
-                .fontColor(COLOR_TEXT_MUTED)
+                .fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
                 .width('100%')
                 .textAlign(TextAlign.Center)
                 .padding(40)
@@ -261,6 +268,6 @@ export struct FilesPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLOR_BG_PRIMARY)
+    .backgroundColor(dc(this.isDark, COLOR_BG_PRIMARY, C_BG_PRIMARY_DARK))
   }
 }

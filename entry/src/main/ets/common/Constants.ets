@@ -128,6 +128,30 @@ export const COLOR_GLASS_BG = 'rgba(255, 255, 255, 0.82)'
 export const COLOR_GLASS_BORDER = 'rgba(0, 0, 0, 0.08)'
 export const COLOR_GLASS_HIGHLIGHT = 'rgba(0, 0, 0, 0.02)'
 
+// ── Color palette (Dark theme) ──
+export const C_BG_PRIMARY_DARK = '#1A1A2E'
+export const C_BG_SECONDARY_DARK = '#2D2D44'
+export const C_BG_TERTIARY_DARK = '#3A3A52'
+export const C_BG_INPUT_DARK = '#2D2D44'
+export const C_BG_HOVER_DARK = '#3A3A52'
+export const C_TEXT_PRIMARY_DARK = '#E8E8EC'
+export const C_TEXT_SECONDARY_DARK = '#9CA3AF'
+export const C_TEXT_MUTED_DARK = '#6B7280'
+export const C_TEXT_INVERSE_DARK = '#1A1A2E'
+export const C_BORDER_DARK = '#3A3A52'
+export const C_DIVIDER_DARK = '#2D2D44'
+export const C_AI_BUBBLE_DARK = '#2D2D44'
+export const C_BUBBLE_AI_TEXT_DARK = '#E8E8EC'
+export const C_GLASS_BG_DARK = 'rgba(26, 26, 46, 0.85)'
+export const C_GLASS_BORDER_DARK = 'rgba(255, 255, 255, 0.06)'
+export const C_GLASS_HIGHLIGHT_DARK = 'rgba(255, 255, 255, 0.02)'
+export const C_SHADOW_CARD_DARK = 'rgba(0, 0, 0, 0.3)'
+
+/** Pick light or dark color based on isDark flag */
+export function dc(isDark: boolean, light: string, dark: string): string {
+  return isDark ? dark : light
+}
+
 // ── Gradients ──
 export interface GradientStop { color: string; offset: number }
 export const GRADIENT_BLUE_PURPLE: string[] = [COLOR_ACCENT_BLUE, COLOR_ACCENT_PURPLE]

@@ -1,10 +1,15 @@
 import {
-  COLOR_BG_PRIMARY, COLOR_BG_SECONDARY,
-  COLOR_TEXT_MUTED, COLOR_ACCENT_BLUE,
-  COLOR_BORDER, COLOR_GLASS_BG, COLOR_GLASS_BORDER,
+  COLOR_BG_PRIMARY, C_BG_PRIMARY_DARK,
+  COLOR_BG_SECONDARY,
+  COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK,
+  COLOR_ACCENT_BLUE,
+  COLOR_BORDER, C_BORDER_DARK,
+  COLOR_GLASS_BG, C_GLASS_BG_DARK,
+  COLOR_GLASS_BORDER, C_GLASS_BORDER_DARK,
   SPACE_XS, SPACE_SM,
   RADIUS_MD,
-  FONT_CAPTION, ANIM_DURATION_NORMAL
+  FONT_CAPTION, ANIM_DURATION_NORMAL,
+  dc
 } from '../common/Constants';
 import { ChatPage } from './ChatPage';
 import { FilesPage } from './FilesPage';
@@ -29,7 +34,16 @@ const TABS: TabItem[] = [
 @Entry
 @Component
 struct Index {
+  @StorageLink('isDarkMode') isDark: boolean = false
   @State currentTabIndex: number = 0
+
+  aboutToAppear(): void {
+    // Listen for cross-tab switch requests (e.g. build fix → chat)
+    let self = this
+    AppStorage.setOrCreate('switchTab', (idx: number) => {
+      self.currentTabIndex = idx
+    })
+  }
 
   @Builder
   TabBarItem(tab: TabItem) {
@@ -40,7 +54,7 @@ struct Index {
       Text(tab.title)
         .fontSize(10)
         .fontWeight(this.currentTabIndex === tab.index ? FontWeight.Bold : FontWeight.Normal)
-        .fontColor(this.currentTabIndex === tab.index ? COLOR_ACCENT_BLUE : COLOR_TEXT_MUTED)
+        .fontColor(this.currentTabIndex === tab.index ? COLOR_ACCENT_BLUE : dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
         .margin({ top: 2 })
     }
     .layoutWeight(1)
@@ -55,7 +69,6 @@ struct Index {
 
   build() {
     Column() {
-      // ── 内容区 ──
       Tabs({ index: this.currentTabIndex }) {
         TabContent() { ChatPage() }
         TabContent() { FilesPage() }
@@ -69,7 +82,6 @@ struct Index {
       .onChange((index: number) => { this.currentTabIndex = index })
       .animationDuration(ANIM_DURATION_NORMAL)
 
-      // ── 底部导航栏 ──
       Row() {
         ForEach(TABS, (tab: TabItem) => {
           this.TabBarItem(tab)
@@ -77,13 +89,13 @@ struct Index {
       }
       .width('100%')
       .padding({ left: SPACE_SM, right: SPACE_SM, top: SPACE_XS + 2, bottom: 4 })
-      .backgroundColor(COLOR_GLASS_BG)
+      .backgroundColor(dc(this.isDark, COLOR_GLASS_BG, C_GLASS_BG_DARK))
       .backdropBlur(20)
       .borderWidth({ top: 0.5 })
-      .borderColor(COLOR_GLASS_BORDER)
+      .borderColor(dc(this.isDark, COLOR_GLASS_BORDER, C_GLASS_BORDER_DARK))
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(COLOR_BG_PRIMARY)
+    .backgroundColor(dc(this.isDark, COLOR_BG_PRIMARY, C_BG_PRIMARY_DARK))
   }
 }

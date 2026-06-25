@@ -1,4 +1,8 @@
-import { COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_BG_SECONDARY, COLOR_BORDER, COLOR_ACCENT_BLUE } from './Constants'
+import {
+  COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK,
+  COLOR_TEXT_SECONDARY, C_TEXT_SECONDARY_DARK,
+  COLOR_ACCENT_BLUE, dc
+} from './Constants'
 import { pasteboard } from '@kit.BasicServicesKit'
 
 interface MdSegment {
@@ -9,6 +13,7 @@ interface MdSegment {
 
 @Component
 export struct MarkdownRenderer {
+  @StorageLink('isDarkMode') isDark: boolean = false
   @Prop content: string = ''
   @State segments: MdSegment[] = []
 
@@ -105,9 +110,9 @@ export struct MarkdownRenderer {
             .backgroundColor('#FF6B35' + '15').borderRadius(4)
             .padding({ left: 4, right: 4, top: 1, bottom: 1 })
         } else if (seg.type === 'bold') {
-          Text(seg.content).fontSize(14).fontColor(COLOR_TEXT_PRIMARY).fontWeight(FontWeight.Bold).lineHeight(20)
+          Text(seg.content).fontSize(14).fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK)).fontWeight(FontWeight.Bold).lineHeight(20)
         } else {
-          Text(seg.content).fontSize(14).fontColor(COLOR_TEXT_PRIMARY).lineHeight(20)
+          Text(seg.content).fontSize(14).fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK)).lineHeight(20)
         }
       }, (seg: MdSegment, idx: number) => idx.toString())
     }.width('100%')

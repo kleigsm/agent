@@ -3,17 +3,26 @@ import { SettingsViewModel } from '../viewmodel/SettingsViewModel';
 import { DiscoveryManager } from '../common/DiscoveryManager';
 import { DiscoveredServer } from '../common/Models';
 import {
-  COLOR_BG_PRIMARY, COLOR_BG_SECONDARY, COLOR_BG_INPUT,
-  COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED,
+  COLOR_BG_PRIMARY, C_BG_PRIMARY_DARK,
+  COLOR_BG_SECONDARY, C_BG_SECONDARY_DARK,
+  COLOR_BG_INPUT, C_BG_INPUT_DARK,
+  COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK,
+  COLOR_TEXT_SECONDARY, C_TEXT_SECONDARY_DARK,
+  COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK,
   COLOR_ACCENT_BLUE, COLOR_ACCENT_GREEN, COLOR_ACCENT_RED,
-  COLOR_ACCENT_ORANGE, COLOR_BORDER, COLOR_GLASS_BG, COLOR_GLASS_BORDER,
+  COLOR_ACCENT_ORANGE, COLOR_BORDER, C_BORDER_DARK,
+  COLOR_GLASS_BG, C_GLASS_BG_DARK,
+  COLOR_GLASS_BORDER, C_GLASS_BORDER_DARK,
   SPACE_SM, SPACE_MD, SPACE_LG, SPACE_XL,
   RADIUS_MD, RADIUS_LG,
-  FONT_CAPTION, FONT_BODY_SM, FONT_BODY, FONT_BODY_LG, FONT_HEADING
+  FONT_CAPTION, FONT_BODY_SM, FONT_BODY, FONT_BODY_LG, FONT_HEADING,
+  dc
 } from '../common/Constants';
+import { preferences } from '@kit.ArkData';
 
 @Component
 export struct SettingsPage {
+  @StorageLink('isDarkMode') isDark: boolean = false
   @State serverUrl: string = ''
   @State authToken: string = ''
   @State connectionStatus: ConnectionStatus = ConnectionStatus.DISCONNECTED
@@ -110,11 +119,23 @@ export struct SettingsPage {
     }
   }
 
+  async onDarkChange(): Promise<void> {
+    // Persist dark mode preference
+    let ctx = this.getUIContext().getHostContext()
+    if (ctx) {
+      try {
+        let p = await preferences.getPreferences(ctx, 'coderemote_settings')
+        await p.put('dark_mode', this.isDark)
+        await p.flush()
+      } catch (e) {}
+    }
+  }
+
   build() {
     Column() {
       Text('设置')
         .fontSize(FONT_HEADING)
-        .fontColor(COLOR_TEXT_PRIMARY)
+        .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
         .fontWeight(FontWeight.Bold)
         .width('100%')
         .padding({ left: SPACE_XL, top: SPACE_LG, bottom: SPACE_LG })
@@ -131,7 +152,7 @@ export struct SettingsPage {
 
           Text(this.statusText)
             .fontSize(FONT_BODY_LG)
-            .fontColor(COLOR_TEXT_PRIMARY)
+            .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
             .fontWeight(FontWeight.Medium)
             .margin({ left: SPACE_SM })
 
@@ -161,89 +182,91 @@ export struct SettingsPage {
         }
       }
       .width('100%')
-      .backgroundColor(COLOR_GLASS_BG)
+      .backgroundColor(dc(this.isDark, COLOR_GLASS_BG, C_GLASS_BG_DARK))
       .borderRadius(RADIUS_LG)
       .borderWidth(1)
-      .borderColor(COLOR_GLASS_BORDER)
+      .borderColor(dc(this.isDark, COLOR_GLASS_BORDER, C_GLASS_BORDER_DARK))
       .padding(SPACE_LG)
       .margin({ left: SPACE_LG, right: SPACE_LG })
+
+      // ── 深色模式 ──
+      Row() {
+        Text('深色模式')
+          .fontSize(FONT_BODY)
+          .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
+          .layoutWeight(1)
+        Toggle({ type: ToggleType.Switch, isOn: this.isDark })
+          .onChange((v: boolean) => { this.isDark = v; this.onDarkChange() })
+      }
+      .width('100%')
+      .backgroundColor(dc(this.isDark, COLOR_GLASS_BG, C_GLASS_BG_DARK))
+      .borderRadius(RADIUS_LG)
+      .borderWidth(1)
+      .borderColor(dc(this.isDark, COLOR_GLASS_BORDER, C_GLASS_BORDER_DARK))
+      .padding(SPACE_LG)
+      .margin({ left: SPACE_LG, right: SPACE_LG, top: SPACE_MD })
 
       // ── 服务器地址 ──
       Column() {
         Text('服务器地址')
           .fontSize(12)
-          .fontColor(COLOR_TEXT_MUTED)
+          .fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
           .margin({ bottom: SPACE_SM })
 
         TextInput({ placeholder: 'ws://192.168.1.100:3000', text: this.serverUrl })
-          .fontColor(COLOR_TEXT_PRIMARY)
-          .fontFamily('monospace')
-          .fontSize(14)
-          .backgroundColor(COLOR_BG_INPUT)
-          .borderRadius(RADIUS_MD)
-          .borderWidth(1)
-          .borderColor(COLOR_BORDER)
-          .height(48)
-          .padding({ left: SPACE_LG })
-          .width('100%')
+          .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
+          .fontFamily('monospace').fontSize(14)
+          .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK))
+          .borderRadius(RADIUS_MD).borderWidth(1)
+          .borderColor(dc(this.isDark, COLOR_BORDER, C_BORDER_DARK))
+          .height(48).padding({ left: SPACE_LG }).width('100%')
           .onChange((value: string) => { this.serverUrl = value })
       }
       .width('100%')
-      .backgroundColor(COLOR_GLASS_BG)
-      .borderRadius(RADIUS_LG)
-      .borderWidth(1)
-      .borderColor(COLOR_GLASS_BORDER)
-      .padding(SPACE_LG)
-      .margin({ left: SPACE_LG, right: SPACE_LG, top: SPACE_MD })
+      .backgroundColor(dc(this.isDark, COLOR_GLASS_BG, C_GLASS_BG_DARK))
+      .borderRadius(RADIUS_LG).borderWidth(1)
+      .borderColor(dc(this.isDark, COLOR_GLASS_BORDER, C_GLASS_BORDER_DARK))
+      .padding(SPACE_LG).margin({ left: SPACE_LG, right: SPACE_LG, top: SPACE_MD })
 
       // ── 认证令牌 ──
       Column() {
         Text('认证令牌')
           .fontSize(12)
-          .fontColor(COLOR_TEXT_MUTED)
+          .fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
           .margin({ bottom: SPACE_SM })
 
         TextInput({ placeholder: '输入服务器令牌...', text: this.authToken })
-          .fontColor(COLOR_TEXT_PRIMARY)
-          .fontFamily('monospace')
-          .fontSize(14)
-          .backgroundColor(COLOR_BG_INPUT)
-          .borderRadius(RADIUS_MD)
-          .borderWidth(1)
-          .borderColor(COLOR_BORDER)
-          .height(48)
-          .padding({ left: SPACE_LG })
-          .width('100%')
+          .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
+          .fontFamily('monospace').fontSize(14)
+          .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK))
+          .borderRadius(RADIUS_MD).borderWidth(1)
+          .borderColor(dc(this.isDark, COLOR_BORDER, C_BORDER_DARK))
+          .height(48).padding({ left: SPACE_LG }).width('100%')
           .type(InputType.Password)
           .onChange((value: string) => { this.authToken = value })
       }
       .width('100%')
-      .backgroundColor(COLOR_GLASS_BG)
-      .borderRadius(RADIUS_LG)
-      .borderWidth(1)
-      .borderColor(COLOR_GLASS_BORDER)
-      .padding(SPACE_LG)
-      .margin({ left: SPACE_LG, right: SPACE_LG, top: SPACE_MD })
+      .backgroundColor(dc(this.isDark, COLOR_GLASS_BG, C_GLASS_BG_DARK))
+      .borderRadius(RADIUS_LG).borderWidth(1)
+      .borderColor(dc(this.isDark, COLOR_GLASS_BORDER, C_GLASS_BORDER_DARK))
+      .padding(SPACE_LG).margin({ left: SPACE_LG, right: SPACE_LG, top: SPACE_MD })
 
       // ── 网络扫描 ──
       Column() {
         Row() {
           Text('发现服务器')
             .fontSize(14)
-            .fontColor(COLOR_TEXT_PRIMARY)
+            .fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK))
             .layoutWeight(1)
           Button(this.isScanning ? '扫描中...' : '扫描网络')
             .fontSize(13)
             .fontColor(this.isScanning ? COLOR_TEXT_SECONDARY : COLOR_ACCENT_BLUE)
-            .backgroundColor(COLOR_BG_INPUT)
-            .borderRadius(RADIUS_MD)
-            .borderWidth(1)
-            .borderColor(COLOR_BORDER)
-            .height(34)
-            .enabled(!this.isScanning)
+            .backgroundColor(dc(this.isDark, COLOR_BG_INPUT, C_BG_INPUT_DARK))
+            .borderRadius(RADIUS_MD).borderWidth(1)
+            .borderColor(dc(this.isDark, COLOR_BORDER, C_BORDER_DARK))
+            .height(34).enabled(!this.isScanning)
             .onClick(() => this.scanNetwork())
-        }
-        .width('100%')
+        }.width('100%')
 
         if (this.isScanning) {
           LoadingProgress().width(22).height(22).color(COLOR_ACCENT_BLUE).margin({ top: SPACE_MD })
@@ -253,25 +276,22 @@ export struct SettingsPage {
           Row() {
             Column() {
               Text('ws://' + server.host + ':' + server.port)
-                .fontSize(13).fontColor(COLOR_TEXT_PRIMARY).fontFamily('monospace')
+                .fontSize(13).fontColor(dc(this.isDark, COLOR_TEXT_PRIMARY, C_TEXT_PRIMARY_DARK)).fontFamily('monospace')
               Text('令牌: ' + server.token.substring(0, 10) + '...')
-                .fontSize(11).fontColor(COLOR_TEXT_MUTED).margin({ top: 2 })
-            }
-            .layoutWeight(1).alignItems(HorizontalAlign.Start)
+                .fontSize(11).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK)).margin({ top: 2 })
+            }.layoutWeight(1).alignItems(HorizontalAlign.Start)
             Button('使用').fontSize(11).fontColor('#FFFFFF')
               .backgroundColor(COLOR_ACCENT_BLUE).borderRadius(RADIUS_MD).height(30)
               .onClick(() => this.selectServer(server))
-          }
-          .width('100%').padding({ top: SPACE_SM }).border({ width: { top: 0.5 }, color: COLOR_BORDER })
+          }.width('100%').padding({ top: SPACE_SM })
+           .border({ width: { top: 0.5 }, color: dc(this.isDark, COLOR_BORDER, C_BORDER_DARK) })
         }, (server: DiscoveredServer) => server.host + ':' + server.port)
       }
       .width('100%')
-      .backgroundColor(COLOR_GLASS_BG)
-      .borderRadius(RADIUS_LG)
-      .borderWidth(1)
-      .borderColor(COLOR_GLASS_BORDER)
-      .padding(SPACE_LG)
-      .margin({ left: SPACE_LG, right: SPACE_LG, top: SPACE_MD })
+      .backgroundColor(dc(this.isDark, COLOR_GLASS_BG, C_GLASS_BG_DARK))
+      .borderRadius(RADIUS_LG).borderWidth(1)
+      .borderColor(dc(this.isDark, COLOR_GLASS_BORDER, C_GLASS_BORDER_DARK))
+      .padding(SPACE_LG).margin({ left: SPACE_LG, right: SPACE_LG, top: SPACE_MD })
 
       // ── 帮助 ──
       Text(
@@ -281,13 +301,10 @@ export struct SettingsPage {
         '4. 点击"连接"'
       )
         .fontSize(11)
-        .fontColor(COLOR_TEXT_MUTED)
-        .width('100%')
-        .padding(SPACE_LG)
-        .lineHeight(20)
+        .fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK))
+        .width('100%').padding(SPACE_LG).lineHeight(20)
     }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(COLOR_BG_PRIMARY)
+    .width('100%').height('100%')
+    .backgroundColor(dc(this.isDark, COLOR_BG_PRIMARY, C_BG_PRIMARY_DARK))
   }
 }

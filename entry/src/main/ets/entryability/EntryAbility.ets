@@ -1,9 +1,17 @@
 import { UIAbility, Want, AbilityConstant } from '@kit.AbilityKit';
 import { window } from '@kit.ArkUI';
+import { preferences } from '@kit.ArkData';
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     console.info('EntryAbility onCreate')
+    // Restore dark mode preference
+    let ctx = this.context.getApplicationContext()
+    preferences.getPreferences(ctx, 'coderemote_settings').then(p => {
+      p.get('dark_mode', false).then((v: preferences.ValueType) => {
+        AppStorage.setOrCreate('isDarkMode', v as boolean)
+      })
+    })
   }
 
   onDestroy(): void {
