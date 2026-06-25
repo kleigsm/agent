@@ -92,7 +92,7 @@ export struct DashboardPage {
           Text('请先在「设置」页连接服务器').fontSize(13).fontColor(dc(this.isDark, COLOR_TEXT_MUTED, C_TEXT_MUTED_DARK)).margin({ top: SPACE_SM })
         }.width('100%').layoutWeight(1).justifyContent(FlexAlign.Center)
       } else {
-        Scroll() {
+        Column() {
           Column() {
             // ── Project info ──
             Row() {
