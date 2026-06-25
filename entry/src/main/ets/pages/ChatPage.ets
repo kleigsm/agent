@@ -299,6 +299,15 @@ export struct ChatPage {
           }
           .layoutWeight(1).backgroundColor(dc(this.isDark, COLOR_BG_SECONDARY, C_BG_SECONDARY_DARK)).borderRadius(22)
           .borderWidth(1).borderColor(dc(this.isDark, COLOR_BORDER, C_BORDER_DARK)).padding({ left: SPACE_LG }).height(44)
+          Button() { Text('🎤').fontSize(16) }
+          .width(40).height(40).borderRadius(20)
+          .backgroundColor(dc(this.isDark, COLOR_BG_SECONDARY, C_BG_SECONDARY_DARK))
+          .borderWidth(1).borderColor(dc(this.isDark, COLOR_BORDER, C_BORDER_DARK))
+          .margin({ left: SPACE_SM })
+          .onClick(() => {
+            // TODO: voice input — integrate ohos.ai.speechAsr
+          })
+
           Button() { Text('→').fontSize(18).fontWeight(FontWeight.Bold).fontColor('#FFFFFF') }
           .width(40).height(40).borderRadius(20)
           .backgroundColor(this.inputText.trim() && !this.isStreaming ? COLOR_ACCENT_BLUE : dc(this.isDark, COLOR_BG_SECONDARY, C_BG_SECONDARY_DARK))
